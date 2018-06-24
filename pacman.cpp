@@ -48,6 +48,10 @@ ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 ALLEGRO_TIMER *timer = NULL;
 ALLEGRO_BITMAP *mapa   = NULL;
 ALLEGRO_BITMAP *pacman   = NULL;
+ALLEGRO_BITMAP *pac_up   = NULL;
+ALLEGRO_BITMAP *pac_left   = NULL;
+ALLEGRO_BITMAP *pac_down   = NULL;
+ALLEGRO_BITMAP *pac_right   = NULL;
 int i = 15, j = 12; //posição inicial do Pacman na matriz
 int q = 20; //tamanho de cada célula no mapa
 int posy = i*q;
@@ -101,6 +105,11 @@ int inicializa() {
     al_draw_bitmap(mapa,0,0,0);
 
     pacman = al_load_bitmap("pacman.tga");
+	pac_up = al_load_bitmap("pac_up.tga");
+	pac_down = al_load_bitmap("pac_down.tga");
+	pac_left = al_load_bitmap("pac_left.tga");
+	pac_right = al_load_bitmap("pac_right.tga");
+	
     if(!pacman)
     {
         cout << "Falha ao carregar o pacman!" << endl;
@@ -143,24 +152,28 @@ int main(int argc, char **argv)
             if(key[KEY_UP] && MAPA[i-1][j] != '1')
             {
                 i--;
+				pacman=pac_up;
                 posy = i*q;
             }
 
             if(key[KEY_DOWN] && MAPA[i+1][j] != '1')
             {
                 i++;
+				pacman=pac_down;
                 posy = i*q;
             }
 
             if(key[KEY_LEFT] && MAPA[i][j-1] != '1')
             {
                 j--;
+				pacman=pac_left;
                 posx = j*q;
             }
 
             if(key[KEY_RIGHT] && MAPA[i][j+1] != '1')
             {
                 j++;
+				pacman=pac_right;
                 posx = j*q;
             }
 
