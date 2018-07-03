@@ -14,7 +14,7 @@ enum MYKEYS
 };
 
 //matriz definindo mapa do jogo: 1 representa paredes, 0 representa corredor
-char MAPA[26][26] =
+/*char MAPA[26][26] =
 {
     "1111111111111111111111111",
     "1000000001111111000000001",
@@ -42,6 +42,37 @@ char MAPA[26][26] =
     "1000001111000001111000001",
     "1111111111111111111111111",
 };
+*/
+
+//matriz definindo mapa do jogo: 2 representa bolas, 1 representa paredes, 0 representa corredor
+char MAPA[26][26] =
+{
+    "1111111111111111111111111",
+    "1222222221111111222222221",
+    "1211111121111111211111121",
+    "1211111122222222211111121",
+    "1222222221111111222222221",
+    "1112111121111111211112111",
+    "1222111122221222211112221",
+    "1212111111121211111112121",
+    "1212222111221221112222121",
+    "1211112111211121112111121",
+    "1211112122222222212111121",
+    "1222112221112111222112221",
+    "1112111121112111211112111",
+    "1222222221112111222222221",
+    "1211111121112111211111121",
+    "1211122222220222222211121",
+    "1222221111112111111222221",
+    "1111121112222222111211111",
+    "1111121112111112111211111",
+    "1222222222222222222222221",
+    "1211121111112111111211121",
+    "1222221111112111111222221",
+    "1211122222212122222211121",
+    "1222221111222221111222221",
+    "1111111111111111111111111",
+};
 
 ALLEGRO_DISPLAY *display = NULL;
 ALLEGRO_EVENT_QUEUE *event_queue = NULL;
@@ -52,10 +83,12 @@ ALLEGRO_BITMAP *pac_up   = NULL;
 ALLEGRO_BITMAP *pac_left   = NULL;
 ALLEGRO_BITMAP *pac_down   = NULL;
 ALLEGRO_BITMAP *pac_right   = NULL;
+ALLEGRO_BITMAP *bolas   = NULL;
 int i = 15, j = 12; //posição inicial do Pacman na matriz
 int q = 20; //tamanho de cada célula no mapa
 int posy = i*q;
 int posx = j*q;
+int k = 0, l = 0;  //variaveis usadas para aparição das bolas
 
 bool key[4] = { false, false, false, false };
 bool redraw = true;
@@ -117,7 +150,19 @@ int inicializa() {
         return 0;
     }
     al_draw_bitmap(pacman,posx,posy,0);
-
+	
+	
+	bolas = al_load_bitmap("bolas.png");
+	
+	if(!bolas)
+    {
+        cout << "Falha ao carregar as bolas!" << endl;
+        al_destroy_display(display);
+        return 0;
+    }
+	
+	al_draw_bitmap(bolas,k*20,l*20,0);
+	
     event_queue = al_create_event_queue();
     if(!event_queue)
     {
@@ -148,12 +193,16 @@ int main(int argc, char **argv)
         al_wait_for_event(event_queue, &ev);
 
         if(ev.type == ALLEGRO_EVENT_TIMER)
-        {
+        {			
+			
             if(key[KEY_UP] && MAPA[i-1][j] != '1')
             {
                 i--;
 				pacman=pac_up;
                 posy = i*q;
+				
+				if(MAPA[i][j] == '2')   //se passa pela bola, a bola some
+					MAPA[i][j] = '0';
             }
 
             if(key[KEY_DOWN] && MAPA[i+1][j] != '1')
@@ -161,6 +210,9 @@ int main(int argc, char **argv)
                 i++;
 				pacman=pac_down;
                 posy = i*q;
+				
+				if(MAPA[i][j] == '2')   //se passa pela bola, a bola some
+					MAPA[i][j] = '0';
             }
 
             if(key[KEY_LEFT] && MAPA[i][j-1] != '1')
@@ -168,6 +220,9 @@ int main(int argc, char **argv)
                 j--;
 				pacman=pac_left;
                 posx = j*q;
+				
+				if(MAPA[i][j] == '2')   //se passa pela bola, a bola some
+					MAPA[i][j] = '0';
             }
 
             if(key[KEY_RIGHT] && MAPA[i][j+1] != '1')
@@ -175,6 +230,9 @@ int main(int argc, char **argv)
                 j++;
 				pacman=pac_right;
                 posx = j*q;
+				
+				if(MAPA[i][j] == '2')   //se passa pela bola, a bola some
+					MAPA[i][j] = '0';
             }
 
             redraw = true;
@@ -238,12 +296,24 @@ int main(int argc, char **argv)
 
             al_draw_bitmap(mapa,0,0,0);
             al_draw_bitmap(pacman,posx,posy,0);
+			
+			for(k=0; k <26; k++){
+				for (l=0; l<26; l++){
+					if(MAPA[k][l] == '2')
+						al_draw_bitmap(bolas,l*20,k*20,0);
+				}
+			}
+					
+		
             al_flip_display();
+		
+			
         }
     }
 
     al_destroy_bitmap(mapa);
     al_destroy_bitmap(pacman);
+	al_destroy_bitmap(bolas);
     al_destroy_timer(timer);
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
