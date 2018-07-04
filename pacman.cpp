@@ -1,5 +1,7 @@
 #include <allegro5/allegro.h>
 #include "allegro5/allegro_image.h"
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
 #include <iostream>
 
 using namespace std;
@@ -84,6 +86,7 @@ ALLEGRO_BITMAP *pac_left   = NULL;
 ALLEGRO_BITMAP *pac_down   = NULL;
 ALLEGRO_BITMAP *pac_right   = NULL;
 ALLEGRO_BITMAP *bolas   = NULL;
+ALLEGRO_SAMPLE *sample=NULL;
 int i = 15, j = 12; //posição inicial do Pacman na matriz
 int q = 20; //tamanho de cada célula no mapa
 int posy = i*q;
@@ -107,12 +110,37 @@ int inicializa() {
         return 0;
     }
 
-    timer = al_create_timer(1.0 / FPS);
+    timer = al_create_timer(0.8 / FPS);
     if(!timer)
     {
         cout << "Falha ao inicializar o temporizador" << endl;
         return 0;
     }
+	
+
+	     
+   if(!al_install_audio()){
+      fprintf(stderr, "failed to initialize audio!\n");
+      return -1;
+   }
+
+   if(!al_init_acodec_addon()){
+      fprintf(stderr, "failed to initialize audio codecs!\n");
+      return -1;
+   }
+	
+   if (!al_reserve_samples(1)){
+      fprintf(stderr, "failed to reserve samples!\n");
+      return -1;
+   }
+	
+   	sample = al_load_sample( "waka.wav" );
+
+   if (!sample){
+      printf( "Audio clip sample not loaded!\n" ); 
+      return -1;
+   }
+	al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
 
     if(!al_init_image_addon())
     {
@@ -127,6 +155,7 @@ int inicializa() {
         al_destroy_timer(timer);
         return 0;
     }
+	
 
     mapa = al_load_bitmap("map.bmp");
     if(!mapa)
@@ -147,6 +176,7 @@ int inicializa() {
     {
         cout << "Falha ao carregar o pacman!" << endl;
         al_destroy_display(display);
+		
         return 0;
     }
     al_draw_bitmap(pacman,posx,posy,0);
@@ -329,6 +359,6 @@ int main(int argc, char **argv)
     al_destroy_timer(timer);
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
-
+	al_destroy_sample(sample);
     return 0;
 }
