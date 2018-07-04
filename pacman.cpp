@@ -2,6 +2,8 @@
 #include "allegro5/allegro_image.h"
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include <iostream>
 
 using namespace std;
@@ -57,7 +59,8 @@ ALLEGRO_BITMAP *pac_left   = NULL;
 ALLEGRO_BITMAP *pac_down   = NULL;
 ALLEGRO_BITMAP *pac_right   = NULL;
 ALLEGRO_BITMAP *bolas   = NULL;
-ALLEGRO_SAMPLE *sample=NULL;
+ALLEGRO_SAMPLE *sample = NULL;
+ALLEGRO_FONT *fonte = NULL;
 int i = 15, j = 12; //posição inicial do Pacman na matriz
 int q = 20; //tamanho de cada célula no mapa
 int posy = i*q;
@@ -87,9 +90,9 @@ int inicializa() {
         cout << "Falha ao inicializar o temporizador" << endl;
         return 0;
     }
-	
+    
 
-	     
+         
    if(!al_install_audio()){
       fprintf(stderr, "failed to initialize audio!\n");
       return -1;
@@ -99,19 +102,19 @@ int inicializa() {
       fprintf(stderr, "failed to initialize audio codecs!\n");
       return -1;
    }
-	
+    
    if (!al_reserve_samples(1)){
       fprintf(stderr, "failed to reserve samples!\n");
       return -1;
    }
-	
-   	sample = al_load_sample("waka.wav" ); //musica que sera carregada
+    
+    sample = al_load_sample("waka.wav" ); //musica que sera carregada
 
    if (!sample){
       printf( "Audio clip sample not loaded!\n" ); 
       return -1;
    }
-	al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
+    al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
 
     if(!al_init_image_addon())
     {
@@ -126,7 +129,7 @@ int inicializa() {
         al_destroy_timer(timer);
         return 0;
     }
-	
+    
 
     mapa = al_load_bitmap("map.bmp");
     if(!mapa)
@@ -138,32 +141,50 @@ int inicializa() {
     al_draw_bitmap(mapa,0,0,0);
 
     pacman = al_load_bitmap("pacman.png");
-	pac_up = al_load_bitmap("pac_up.png");
-	pac_down = al_load_bitmap("pac_down.png");
-	pac_left = al_load_bitmap("pac_left.png");
-	pac_right = al_load_bitmap("pac_right.png");
-	
+    pac_up = al_load_bitmap("pac_up.png");
+    pac_down = al_load_bitmap("pac_down.png");
+    pac_left = al_load_bitmap("pac_left.png");
+    pac_right = al_load_bitmap("pac_right.png");
+    
     if(!pacman)
     {
         cout << "Falha ao carregar o pacman!" << endl;
         al_destroy_display(display);
-		
+        
         return 0;
     }
     al_draw_bitmap(pacman,posx,posy,0);
-	
-	
-	bolas = al_load_bitmap("bolas.png");
-	
-	if(!bolas)
+    
+    
+    bolas = al_load_bitmap("bolas.png");
+    
+    if(!bolas)
     {
         cout << "Falha ao carregar as bolas!" << endl;
         al_destroy_display(display);
         return 0;
     }
-	
-	al_draw_bitmap(bolas,k*20,l*20,0);
-	
+    
+    al_draw_bitmap(bolas,k*20,l*20,0);
+
+    al_init_font_addon();
+    al_init_ttf_addon();
+ 
+    // Inicialização das fontes
+    if (!al_init_ttf_addon())
+    {
+        cout<< "Falha ao inicializar add-on allegro_ttf."<<endl;;
+        return -1;
+    }
+     // Carregando o arquivo de fonte
+    fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
+    if (!fonte)
+    {
+        al_destroy_display(display);
+       cout<< "Falha ao carregar fonte."<<endl;
+        return -1;
+    }
+    
     event_queue = al_create_event_queue();
     if(!event_queue)
     {
@@ -186,6 +207,7 @@ int inicializa() {
 
 int main(int argc, char **argv)
 {
+    int pontos=0;
     if(!inicializa()) return -1;
 
     while(!sair)
@@ -194,62 +216,66 @@ int main(int argc, char **argv)
         al_wait_for_event(event_queue, &ev);
 
         if(ev.type == ALLEGRO_EVENT_TIMER)
-        {			
-			
+        {           
+            
             if(key[KEY_UP] && MAPA[i-1][j] != '1')
             {
                 i--;
-				pacman=pac_up;
+                pacman=pac_up;
                 posy = i*q;
-				
-				if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
-					MAPA[i][j] = '0';
-					bola--; //subtrai no numero de bolinhas
-				}
+                
+                if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
+                    MAPA[i][j] = '0';
+                    bola--; //subtrai no numero de bolinhas
+                    pontos++;
+                }
             }
 
             if(key[KEY_DOWN] && MAPA[i+1][j] != '1')
             {
                 i++;
-				pacman=pac_down;
+                pacman=pac_down;
                 posy = i*q;
-				
-				if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
-					MAPA[i][j] = '0';
-					bola--;
-				}
+                
+                if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
+                    MAPA[i][j] = '0';
+                    bola--;
+                    pontos++;
+                }
             }
 
             if(key[KEY_LEFT] && MAPA[i][j-1] != '1')
             {
                 j--;
-				pacman=pac_left;
+                pacman=pac_left;
                 posx = j*q;
-				
-				if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
-					MAPA[i][j] = '0';
-					bola--;
-				}
+                
+                if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
+                    MAPA[i][j] = '0';
+                    bola--;
+                    pontos++;
+                }
             }
 
             if(key[KEY_RIGHT] && MAPA[i][j+1] != '1')
             {
                 j++;
-				pacman=pac_right;
+                pacman=pac_right;
                 posx = j*q;
-				
-				if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
-					MAPA[i][j] = '0';
-					bola--;
-				}
+                
+                if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
+                    MAPA[i][j] = '0';
+                    bola--;
+                    pontos++;
+                }
             }
-				
-			
-		redraw = true;
-		
-			if(bola==0){
-				return 0;
-			}
+                
+            
+        redraw = true;
+        
+            if(bola==0){
+                return 0;
+            }
         }
         else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
         {
@@ -282,30 +308,30 @@ int main(int argc, char **argv)
             {
             case ALLEGRO_KEY_UP:
                 key[KEY_UP] = true;
-				key[KEY_DOWN] = false; //codigo para o pacman andar ate pressionar outra tecla
-				key[KEY_LEFT] = false;	//analogo para as teclas de baixo
-				key[KEY_RIGHT] = false;
+                key[KEY_DOWN] = false; //codigo para o pacman andar ate pressionar outra tecla
+                key[KEY_LEFT] = false;  //analogo para as teclas de baixo
+                key[KEY_RIGHT] = false;
                 break;
 
             case ALLEGRO_KEY_DOWN:
                 key[KEY_UP] = false;
-				key[KEY_DOWN] = true;
-				key[KEY_LEFT] = false;
-				key[KEY_RIGHT] = false;
+                key[KEY_DOWN] = true;
+                key[KEY_LEFT] = false;
+                key[KEY_RIGHT] = false;
                 break;
 
             case ALLEGRO_KEY_LEFT:
                 key[KEY_UP] = false;
-				key[KEY_DOWN] = false;
-				key[KEY_LEFT] = true;
-				key[KEY_RIGHT] = false;
+                key[KEY_DOWN] = false;
+                key[KEY_LEFT] = true;
+                key[KEY_RIGHT] = false;
                 break;
 
             case ALLEGRO_KEY_RIGHT:
                 key[KEY_UP] = false;
-				key[KEY_DOWN] = false;
-				key[KEY_LEFT] = false;
-				key[KEY_RIGHT] = true;
+                key[KEY_DOWN] = false;
+                key[KEY_LEFT] = false;
+                key[KEY_RIGHT] = true;
                 break;
 
             case ALLEGRO_KEY_ESCAPE:
@@ -313,6 +339,7 @@ int main(int argc, char **argv)
                 break;
             }
         }
+         al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Pontuacao: %d", pontos);
 
         if(redraw && al_is_event_queue_empty(event_queue))
         {
@@ -322,27 +349,29 @@ int main(int argc, char **argv)
 
             al_draw_bitmap(mapa,0,0,0);
             al_draw_bitmap(pacman,posx,posy,0);
-			
-			for(k=0; k <26; k++){
-				for (l=0; l<26; l++){
-					if(MAPA[k][l] == '2')
-						al_draw_bitmap(bolas,l*20,k*20,0);
-				}
-			}
-					
-		
+             al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Pontuacao: %d", pontos);
+            
+            for(k=0; k <26; k++){
+                for (l=0; l<26; l++){
+                    if(MAPA[k][l] == '2')
+                        al_draw_bitmap(bolas,l*20,k*20,0);
+                }
+            }
+                    
+        
             al_flip_display();
-		
-			
+        
+            
         }
     }
 
     al_destroy_bitmap(mapa);
+    al_destroy_font(fonte);
     al_destroy_bitmap(pacman);
-	al_destroy_bitmap(bolas);
+    al_destroy_bitmap(bolas);
     al_destroy_timer(timer);
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
-	al_destroy_sample(sample);
+    al_destroy_sample(sample);
     return 0;
 }
