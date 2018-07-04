@@ -75,6 +75,7 @@ char MAPA[26][26] =
     "1222221111222221111222221",
     "1111111111111111111111111",
 };
+int bola=253; //numero de bolinhas no mapa
 
 ALLEGRO_DISPLAY *display = NULL;
 ALLEGRO_EVENT_QUEUE *event_queue = NULL;
@@ -134,7 +135,7 @@ int inicializa() {
       return -1;
    }
 	
-   	sample = al_load_sample( "waka.wav" );
+   	sample = al_load_sample( "som_aceitavel.wav" ); //musica que sera carregada
 
    if (!sample){
       printf( "Audio clip sample not loaded!\n" ); 
@@ -231,8 +232,10 @@ int main(int argc, char **argv)
 				pacman=pac_up;
                 posy = i*q;
 				
-				if(MAPA[i][j] == '2')   //se passa pela bola, a bola some
+				if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
 					MAPA[i][j] = '0';
+					bola--; //subtrai no numero de bolinhas
+				}
             }
 
             if(key[KEY_DOWN] && MAPA[i+1][j] != '1')
@@ -241,8 +244,10 @@ int main(int argc, char **argv)
 				pacman=pac_down;
                 posy = i*q;
 				
-				if(MAPA[i][j] == '2')   //se passa pela bola, a bola some
+				if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
 					MAPA[i][j] = '0';
+					bola--;
+				}
             }
 
             if(key[KEY_LEFT] && MAPA[i][j-1] != '1')
@@ -251,8 +256,10 @@ int main(int argc, char **argv)
 				pacman=pac_left;
                 posx = j*q;
 				
-				if(MAPA[i][j] == '2')   //se passa pela bola, a bola some
+				if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
 					MAPA[i][j] = '0';
+					bola--;
+				}
             }
 
             if(key[KEY_RIGHT] && MAPA[i][j+1] != '1')
@@ -261,10 +268,16 @@ int main(int argc, char **argv)
 				pacman=pac_right;
                 posx = j*q;
 				
-				if(MAPA[i][j] == '2')   //se passa pela bola, a bola some
+				if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
 					MAPA[i][j] = '0';
+					bola--;
+				}
             }
-
+				if(bola==0){
+					return 0;
+				}
+			
+				
             redraw = true;
         }
         else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
