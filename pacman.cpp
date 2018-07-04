@@ -137,11 +137,11 @@ int inicializa() {
     }
     al_draw_bitmap(mapa,0,0,0);
 
-    pacman = al_load_bitmap("pacman.tga");
-	pac_up = al_load_bitmap("pac_up.tga");
-	pac_down = al_load_bitmap("pac_down.tga");
-	pac_left = al_load_bitmap("pac_left.tga");
-	pac_right = al_load_bitmap("pac_right.tga");
+    pacman = al_load_bitmap("pacman.png");
+	pac_up = al_load_bitmap("pac_up.png");
+	pac_down = al_load_bitmap("pac_down.png");
+	pac_left = al_load_bitmap("pac_left.png");
+	pac_right = al_load_bitmap("pac_right.png");
 	
     if(!pacman)
     {
