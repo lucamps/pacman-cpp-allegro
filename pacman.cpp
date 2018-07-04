@@ -246,27 +246,6 @@ int main(int argc, char **argv)
             switch(ev.keyboard.keycode)
             {
             case ALLEGRO_KEY_UP:
-                key[KEY_UP] = true;
-                break;
-
-            case ALLEGRO_KEY_DOWN:
-                key[KEY_DOWN] = true;
-                break;
-
-            case ALLEGRO_KEY_LEFT:
-                key[KEY_LEFT] = true;
-                break;
-
-            case ALLEGRO_KEY_RIGHT:
-                key[KEY_RIGHT] = true;
-                break;
-            }
-        }
-        else if(ev.type == ALLEGRO_EVENT_KEY_UP)
-        {
-            switch(ev.keyboard.keycode)
-            {
-            case ALLEGRO_KEY_UP:
                 key[KEY_UP] = false;
                 break;
 
@@ -280,6 +259,39 @@ int main(int argc, char **argv)
 
             case ALLEGRO_KEY_RIGHT:
                 key[KEY_RIGHT] = false;
+                break;
+            }
+        }
+        else if(ev.type == ALLEGRO_EVENT_KEY_UP)
+        {
+            switch(ev.keyboard.keycode)
+            {
+            case ALLEGRO_KEY_UP:
+                key[KEY_UP] = true;
+				key[KEY_DOWN] = false; //codigo para o pacman andar ate pressionar outra tecla
+				key[KEY_LEFT] = false;	//analogo para as teclas de baixo
+				key[KEY_RIGHT] = false;
+                break;
+
+            case ALLEGRO_KEY_DOWN:
+                key[KEY_UP] = false;
+				key[KEY_DOWN] = true;
+				key[KEY_LEFT] = false;
+				key[KEY_RIGHT] = false;
+                break;
+
+            case ALLEGRO_KEY_LEFT:
+                key[KEY_UP] = false;
+				key[KEY_DOWN] = false;
+				key[KEY_LEFT] = true;
+				key[KEY_RIGHT] = false;
+                break;
+
+            case ALLEGRO_KEY_RIGHT:
+                key[KEY_UP] = false;
+				key[KEY_DOWN] = false;
+				key[KEY_LEFT] = false;
+				key[KEY_RIGHT] = true;
                 break;
 
             case ALLEGRO_KEY_ESCAPE:
