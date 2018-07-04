@@ -54,6 +54,8 @@ ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 ALLEGRO_TIMER *timer = NULL;
 ALLEGRO_BITMAP *mapa   = NULL;
 ALLEGRO_BITMAP *pacman   = NULL;
+ALLEGRO_BITMAP *shutup   = NULL;
+ALLEGRO_BITMAP *aux   = NULL;   //p abrir e fechar boca pacman
 ALLEGRO_BITMAP *pac_up   = NULL;
 ALLEGRO_BITMAP *pac_left   = NULL;
 ALLEGRO_BITMAP *pac_down   = NULL;
@@ -108,7 +110,7 @@ int inicializa() {
       return -1;
    }
     
-    sample = al_load_sample("waka.wav" ); //musica que sera carregada
+    sample = al_load_sample("suspense.wav" ); //musica que sera carregada
 
    if (!sample){
       printf( "Audio clip sample not loaded!\n" ); 
@@ -145,6 +147,8 @@ int inicializa() {
     pac_down = al_load_bitmap("pac_down.png");
     pac_left = al_load_bitmap("pac_left.png");
     pac_right = al_load_bitmap("pac_right.png");
+	shutup = al_load_bitmap("shutup.png");
+	shutup = al_load_bitmap("shutup.png");
     
     if(!pacman)
     {
@@ -204,7 +208,7 @@ int inicializa() {
 
     return 1;
 }
-
+	int sim=0;
 int main(int argc, char **argv)
 {
     int pontos=0;
@@ -214,10 +218,11 @@ int main(int argc, char **argv)
     {
         ALLEGRO_EVENT ev;
         al_wait_for_event(event_queue, &ev);
-
+		
         if(ev.type == ALLEGRO_EVENT_TIMER)
         {           
-            
+			
+			
             if(key[KEY_UP] && MAPA[i-1][j] != '1')
             {
                 i--;
@@ -270,8 +275,16 @@ int main(int argc, char **argv)
                 }
             }
                 
-            
-        redraw = true;
+        if(sim%2==0){
+				aux = pacman;
+           		pacman=shutup;  //se a variavel sim é par, redraw o pacman com boca fechada
+				redraw = true;
+			}else{
+				pacman=aux;
+				redraw = true; //se nao, da redraw nele normal
+			}
+			sim++;
+        
         
             if(bola==0){
                 return 0;
@@ -304,6 +317,7 @@ int main(int argc, char **argv)
         }
         else if(ev.type == ALLEGRO_EVENT_KEY_UP)
         {
+			
             switch(ev.keyboard.keycode)
             {
             case ALLEGRO_KEY_UP:
@@ -339,7 +353,7 @@ int main(int argc, char **argv)
                 break;
             }
         }
-         al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Pontuacao: %d", pontos);
+         al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
         if(redraw && al_is_event_queue_empty(event_queue))
         {
@@ -349,7 +363,7 @@ int main(int argc, char **argv)
 
             al_draw_bitmap(mapa,0,0,0);
             al_draw_bitmap(pacman,posx,posy,0);
-             al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Pontuacao: %d", pontos);
+             al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
             
             for(k=0; k <26; k++){
                 for (l=0; l<26; l++){
