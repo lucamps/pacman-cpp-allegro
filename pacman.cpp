@@ -15,36 +15,6 @@ enum MYKEYS
     KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT
 };
 
-//matriz definindo mapa do jogo: 1 representa paredes, 0 representa corredor
-/*char MAPA[26][26] =
-{
-    "1111111111111111111111111",
-    "1000000001111111000000001",
-    "1011111101111111011111101",
-    "1011111100000000011111101",
-    "1000000001111111000000001",
-    "1110111101111111011110111",
-    "1000111100001000011110001",
-    "1010111111101011111110101",
-    "1010000111001001110000101",
-    "1011110111011101110111101",
-    "1011110100000000010111101",
-    "1000110001110111000110001",
-    "1110111101110111011110111",
-    "1000000001110111000000001",
-    "1011111101110111011111101",
-    "1011100000000000000011101",
-    "1000001111110111111000001",
-    "1111101110000000111011111",
-    "1111101110111110111011111",
-    "1000000000000000000000001",
-    "1011101111110111111011101",
-    "1000001111110111111000001",
-    "1011100000010100000011101",
-    "1000001111000001111000001",
-    "1111111111111111111111111",
-};
-*/
 
 //matriz definindo mapa do jogo: 2 representa bolas, 1 representa paredes, 0 representa corredor
 char MAPA[26][26] =
@@ -135,7 +105,7 @@ int inicializa() {
       return -1;
    }
 	
-   	sample = al_load_sample( "som_aceitavel.wav" ); //musica que sera carregada
+   	sample = al_load_sample("waka.wav" ); //musica que sera carregada
 
    if (!sample){
       printf( "Audio clip sample not loaded!\n" ); 
@@ -273,12 +243,13 @@ int main(int argc, char **argv)
 					bola--;
 				}
             }
-				if(bola==0){
-					return 0;
-				}
-			
 				
-            redraw = true;
+			
+		redraw = true;
+		
+			if(bola==0){
+				return 0;
+			}
         }
         else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
         {
