@@ -28,7 +28,7 @@ enum GKEYS // Teclas do fantasma
 
 
 //matriz definindo mapa do jogo: 2 representa bolas, 1 representa paredes, 0 representa corredor
-char MAPA[24][24] = //13, 12
+char MAPA[24][24] = 
 {
     "11111111111111111111111",
     "12222222222122222222221",
@@ -37,24 +37,24 @@ char MAPA[24][24] = //13, 12
     "12222222222222222222221",
     "12111212111111121211121",
     "12222212222122221222221",
-    "11111211112121111211111",
-    "11111212222222221211111",
-    "11111212111211121211111",
-    "22222222122222122222222",
-    "11111212122222121211111",
-    "11111212111111121211111",
-    "11111212222022221211111",
-    "11111212111111121211111",
+    "11111211110101111211111",
+    "11111210000000001211111",
+    "11111210111011101211111",
+    "00000000100000100000000",
+    "11111210100000101211111",
+    "11111210111111101211111",
+    "11111210000000001211111",
+    "11111210111111121011111",
     "12222222222122222222221",
     "12111211112121111211121",
-    "12221222222222222212221",
+    "12221222222022222212221",
     "11121212111111121212111",
     "12222212222122221222221",
     "12111111112121111111121",
     "12222222222222222222221",
     "11111111111111111111111",
 };
-int bola=253; //numero de bolinhas no mapa
+int bola=184; //numero de bolinhas no mapa
 
 ALLEGRO_DISPLAY *display = NULL;
 ALLEGRO_EVENT_QUEUE *event_queue = NULL;
@@ -72,7 +72,7 @@ ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_FONT *fonte = NULL;
 ALLEGRO_BITMAP *ghostBurro1 = NULL;
-int i = 13, j = 11; //posi��o inicial do Pacman na matriz
+int i = 17, j = 11; //posi��o inicial do Pacman na matriz
 int g = 1, h = 1; // Inicio do fantasma inteligente
 int r = 1, t = 2; // r para linha e t para coluna
 int q = 20; //tamanho de cada c�lula no mapa
@@ -250,7 +250,7 @@ int inicializa() {
     }
       // Carregando o arquivo de fonte
       //fonte = al_load_font("/usr/share/fonts/truetype/lato/Lato-Black.ttf", 28, 0);
-      //fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
+      fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
         if (!fonte)
     {
         al_destroy_display(display);
