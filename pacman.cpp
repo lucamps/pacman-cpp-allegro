@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const float FPS = 5.8;
+const float FPS = 6.8;
 const int SCREEN_W = 460;
 const int SCREEN_H = 550;
 
@@ -25,8 +25,6 @@ enum GKEYS // Teclas do fantasma
 {
     G_UP, G_DOWN, G_LEFT, G_RIGHT
 };
-
-void ghostMove(char M[][24], int *pacX, int *pacY, int *ghostX, int *ghostY) {};
 
 
 //matriz definindo mapa do jogo: 2 representa bolas, 1 representa paredes, 0 representa corredor
@@ -73,19 +71,51 @@ ALLEGRO_BITMAP *pac_right   = NULL;
 ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_FONT *fonte = NULL;
-int i = 13, j = 11; //posiï¿½ï¿½o inicial do Pacman na matriz
-int g = 13, h = 12;
-int q = 20; //tamanho de cada cï¿½lula no mapa
+int i = 13, j = 11; //posição inicial do Pacman na matriz
+int g = 1, h = 1;
+int q = 20; //tamanho de cada célula no mapa
 int posy = i*q;
 int posx = j*q;
 int gposY = g*q;
 int gposX = h*q;
-int k = 0, l = 0;  //variaveis usadas para apariï¿½ï¿½o das bolas
+int k = 0, l = 0;  //variaveis usadas para aparição das bolas
 
 bool key[4] = { false, false, false, false };
 bool gKey[4] = {false, false, false, false};
 bool redraw = true;
 bool sair = false;
+
+void ghostMove(char M[][24], int i, int j, int &g, int &h, int &gposX, int &gposY) {
+
+    int auxG = g; // Para não alterarmos o valor de g e h nas condicionais
+    int auxH = h;
+    //for(int x =0; x<24; x++)
+        //for(int y=0; y<24; y++)
+           // if(MAPA[i][j]){
+
+                if(i > g && M[g+1][auxH] != '1') { // Se estiver em linhas a frente
+                    g++;
+                    gposY = g*q;
+                }
+
+                if(i < g && M[g-1][auxH] != '1') { // Se estiver em linhas a frente
+                    g--;
+                    gposY = g*q;
+                }
+
+                if(j > h && M[g][auxH+1] != '1') { // Se estiver em linhas a frente
+                    h++;
+                    gposX = h*q;
+                }
+
+                if(j < h && M[g][auxH-1] != '1') { // Se estiver em linhas a frente
+                    h--;
+                    gposX = h*q;
+                }
+
+           // }
+}
+
 
 int inicializa() {
     if(!al_init())
@@ -196,7 +226,7 @@ int inicializa() {
     al_init_font_addon();
     al_init_ttf_addon();
 
-    // Inicializaï¿½ï¿½o das fontes
+    // Inicialização das fontes
     if (!al_init_ttf_addon())
     {
         cout<< "Falha ao inicializar add-on allegro_ttf."<<endl;;
@@ -231,7 +261,7 @@ int inicializa() {
 
     return 1;
 }
-    int lastmouth, sim=0;//duas variaveis que serÃ£o usadas p/ abrir e fechar a boca do pac
+	int sim=0;
 int main(int argc, char **argv)
 {
     int pontos=0;
@@ -242,18 +272,23 @@ int main(int argc, char **argv)
         ALLEGRO_EVENT ev;
         al_wait_for_event(event_queue, &ev);
 
-        // Movimentacao do Fantasma
+
+        ghostMove(MAPA,i,j,g,h,gposX,gposY);
+
+        /*// Movimentação do Fantasma Burro
             srand(time(NULL));
             int gMovimento = rand()%4;
 
             if(gMovimento == G_UP && MAPA[g-1][h] != '1')
             {
+
                 h--;
                 gKey[0] = true;
                 gposY = h*q;
 
                 //if(gposY%20==0)
                   //  g--;
+
             }
 
             if(gMovimento == G_DOWN && MAPA[g+1][h] != '1'){
@@ -282,12 +317,15 @@ int main(int argc, char **argv)
                     //if(gposX%20==0)
                       //  h--;
             }
+            */
 
         if(ev.type == ALLEGRO_EVENT_TIMER)
         {
 
+
         // Se chegar na borda do mapa, teleportar para outra
             if(key[KEY_RIGHT] && i == 10 && j == 22){
+
                 i = 10;
                 j = -1;
                 posx = j*q;
@@ -296,6 +334,7 @@ int main(int argc, char **argv)
 
 
              if(key[KEY_LEFT] && i == 10 && j == -1){
+
                 i = 10;
                 j = 23;
                 posx = j*q;
@@ -306,10 +345,9 @@ int main(int argc, char **argv)
             if(key[KEY_UP] && MAPA[i-1][j] != '1')
             {
 
-               pacman = pac_up;
-                lastmouth=2; //armazena qual ultima posicao do pacman (p abrir e fechar boca)
 
-                //if(posy%20==0)
+               pacman = pac_up;
+
                 i--;
                 posy = i*q;
 
@@ -323,13 +361,10 @@ int main(int argc, char **argv)
             if(key[KEY_DOWN] && MAPA[i+1][j] != '1')
             {
 
+
                 pacman=pac_down;
                 i++;
                 posy = i*q;
-                lastmouth=0;
-
-               // if(posy%20==0)
-                 //   i++;
 
                 if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
                     MAPA[i][j] = '0';
@@ -341,13 +376,11 @@ int main(int argc, char **argv)
             if(key[KEY_LEFT] && MAPA[i][j-1] != '1')
             {
 
+
                 pacman=pac_left;
                 j--;
                 posx = j*q;
-                lastmouth=1;
 
-               // if(posx%20==0)
-                 //   j--;
 
                 if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
                     MAPA[i][j] = '0';
@@ -358,14 +391,11 @@ int main(int argc, char **argv)
 
             if(key[KEY_RIGHT] && MAPA[i][j+1] != '1')
             {
+
                 j++;
                 pacman=pac_right;
                 posx = j*q;
-                lastmouth=3;
 
-
-                //if(posx%20==0)
-                //    j++;
 
                 if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
                     MAPA[i][j] = '0';
@@ -373,24 +403,18 @@ int main(int argc, char **argv)
                     pontos++;
                 }
             }
-            
 
-        if(sim%2==0){ 
-           		pacman=shutup;  //se a variavel sim e' par, redraw o pacman com boca fechada
+
+        if(sim%2==0){
+				aux = pacman;
+           		pacman=shutup;  //se a variavel sim é par, redraw o pacman com boca fechada
+				redraw = true;
 			}else{
-                switch(lastmouth){ //switch para redesenhar ultima posica do pacman apos fechar boca
-                    case 0:
-                        pacman=pac_down; break;
-                    case 1:
-                        pacman=pac_left;  break;
-                    case 2:
-                         pacman=pac_up;  break;
-                    case 3:
-                        pacman=pac_right;  break;
-                }
+				pacman=aux;
+				redraw = true; //se nao, da redraw nele normal
 			}
 			sim++;
-            redraw=true;
+
 
             if(bola==0){
                 return 0;
