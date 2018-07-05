@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const float FPS = 9;
+const float FPS = 6.8;
 const int SCREEN_W = 460;
 const int SCREEN_H = 550;
 
@@ -21,10 +21,12 @@ enum MYKEYS
     KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT
 };
 
-enum GKEYS
+enum GKEYS // Teclas do fantasma
 {
     G_UP, G_DOWN, G_LEFT, G_RIGHT
 };
+
+void ghostMove(char M[][24], int *pacX, int *pacY, int *ghostX, int *ghostY) {};
 
 
 //matriz definindo mapa do jogo: 2 representa bolas, 1 representa paredes, 0 representa corredor
@@ -244,38 +246,41 @@ int main(int argc, char **argv)
             srand(time(NULL));
             int gMovimento = rand()%4;
 
-            if(gMovimento == 1 || gKey[0])
-                if(MAPA[g-1][h] != '1')
+            if(gMovimento == G_UP && MAPA[g-1][h] != '1')
             {
+                h--;
                 gKey[0] = true;
-                gposY -= 5;
+                gposY = h*q;
 
-                if(gposY%20==0)
-                    g--;
+                //if(gposY%20==0)
+                  //  g--;
             }
 
-            if(gMovimento == 2 || gKey[1])
-                if(MAPA[g+1][h] != '1'){
-                    gposY += 5;
+            if(gMovimento == G_DOWN && MAPA[g+1][h] != '1'){
+
+                    g++;
+                    gposY = g*q;
                     gKey[1] = true;
-                    if(gposY%20==0)
-                        g++;
+                   // if(gposY%20==0)
+                       // g++;
                 }
 
-            if(gMovimento == 3)
-                if(MAPA[g][h+1] != '1' || gKey[2]){
-                    gposX += 5;
+            if(gMovimento == G_RIGHT && MAPA[g][h+1] != '1'){
+
+                    h++;
+                    gposX = h*q;
                     gKey[2] = true;
-                    if(gposX%20==0)
-                        h++;
+                   // if(gposX%20==0)
+                     //   h++;
             }
 
-            if(gMovimento == 4 || gKey[3])
-                if(MAPA[g][h-1] != '1'){
-                    gposX -= 5;
+            if(gMovimento == G_LEFT && MAPA[g][h-1] != '1'){
+
+                    h--;
+                    gposX = h*q;
                     gKey[1] = true;
-                    if(gposX%20==0)
-                        h--;
+                    //if(gposX%20==0)
+                      //  h--;
             }
 
         if(ev.type == ALLEGRO_EVENT_TIMER)
@@ -301,11 +306,11 @@ int main(int argc, char **argv)
             if(key[KEY_UP] && MAPA[i-1][j] != '1')
             {
 
-                pacman = pac_up;
-                posy -= 5;
+               pacman = pac_up;
 
-                if(posy%20==0)
-                    i--;
+                //if(posy%20==0)
+                i--;
+                posy = i*q;
 
                 if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
                     MAPA[i][j] = '0';
@@ -318,10 +323,11 @@ int main(int argc, char **argv)
             {
 
                 pacman=pac_down;
-                posy += 5;
+                i++;
+                posy = i*q;
 
-                if(posy%20==0)
-                    i++;
+               // if(posy%20==0)
+                 //   i++;
 
                 if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
                     MAPA[i][j] = '0';
@@ -334,10 +340,11 @@ int main(int argc, char **argv)
             {
 
                 pacman=pac_left;
-                posx -= 5;
+                j--;
+                posx = j*q;
 
-                if(posx%20==0)
-                    j--;
+               // if(posx%20==0)
+                 //   j--;
 
                 if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
                     MAPA[i][j] = '0';
@@ -348,11 +355,13 @@ int main(int argc, char **argv)
 
             if(key[KEY_RIGHT] && MAPA[i][j+1] != '1')
             {
+                j++;
                 pacman=pac_right;
-                posx += 5;
+                posx = j*q;
 
-                if(posx%20==0)
-                    j++;
+
+                //if(posx%20==0)
+                //    j++;
 
                 if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
                     MAPA[i][j] = '0';
