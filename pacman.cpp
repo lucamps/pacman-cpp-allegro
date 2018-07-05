@@ -71,16 +71,25 @@ ALLEGRO_BITMAP *pac_right   = NULL;
 ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_FONT *fonte = NULL;
+ALLEGRO_BITMAP *ghostBurro1 = NULL;
 int i = 13, j = 11; //posi��o inicial do Pacman na matriz
-int g = 1, h = 1;
+int g = 1, h = 1; // Inicio do fantasma inteligente
+int r = 1, t = 2; // r para linha e t para coluna
 int q = 20; //tamanho de cada c�lula no mapa
+
+// Variáveis de posição dos fantasmas e do pacman
 int posy = i*q;
 int posx = j*q;
 int gposY = g*q;
 int gposX = h*q;
+int gBurroX = t*q;
+int gBurroY = r*q;
+int randomIndex = -1;
+int pastPos = 0;
+
 int k = 0, l = 0;  //variaveis usadas para apari��o das bolas
 
-bool key[4] = { false, false, false, false };
+bool key[4] = {false, false, false, false} ;
 bool gKey[4] = {false, false, false, false};
 bool redraw = true;
 bool sair = false;
@@ -184,6 +193,7 @@ int inicializa() {
 	shutup = al_load_bitmap("shutup.png");
 	shutup = al_load_bitmap("shutup.png");
 	ghost = al_load_bitmap("ghost.png");
+	ghostBurro1 = al_load_bitmap("ghost.png");
 
     if(!pacman)
     {
@@ -202,8 +212,20 @@ int inicializa() {
         return 0;
     }
 
-
     al_draw_bitmap(ghost,gposX,gposY,0);
+
+    if(!ghostBurro1)
+    {
+        cout << "Falha ao carregar o fantasma burro!" << endl;
+        al_destroy_display(display);
+
+        return 0;
+    }
+
+    al_draw_bitmap(ghostBurro1,gBurroX,gBurroY,0);
+
+
+
 
 
     bolas = al_load_bitmap("bolas.png");
@@ -228,7 +250,7 @@ int inicializa() {
     }
       // Carregando o arquivo de fonte
       //fonte = al_load_font("/usr/share/fonts/truetype/lato/Lato-Black.ttf", 28, 0);
-      fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
+      //fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
         if (!fonte)
     {
         al_destroy_display(display);
@@ -265,56 +287,54 @@ int main(int argc, char **argv)
     {
         ALLEGRO_EVENT ev;
         al_wait_for_event(event_queue, &ev);
-        
 
-        
 
-        /*// Movimenta��o do Fantasma Burro
-            srand(time(NULL));
-            int gMovimento = rand()%4;
 
-            if(gMovimento == G_UP && MAPA[g-1][h] != '1')
-            {
 
-                h--;
-                gKey[0] = true;
-                gposY = h*q;
 
-                //if(gposY%20==0)
-                  //  g--;
-
-            }
-
-            if(gMovimento == G_DOWN && MAPA[g+1][h] != '1'){
-
-                    g++;
-                    gposY = g*q;
-                    gKey[1] = true;
-                   // if(gposY%20==0)
-                       // g++;
-                }
-
-            if(gMovimento == G_RIGHT && MAPA[g][h+1] != '1'){
-
-                    h++;
-                    gposX = h*q;
-                    gKey[2] = true;
-                   // if(gposX%20==0)
-                     //   h++;
-            }
-
-            if(gMovimento == G_LEFT && MAPA[g][h-1] != '1'){
-
-                    h--;
-                    gposX = h*q;
-                    gKey[1] = true;
-                    //if(gposX%20==0)
-                      //  h--;
-            }
-            */
 
         if(ev.type == ALLEGRO_EVENT_TIMER)
         {
+
+         // Movimentacao do Fantasma Burro
+            if(randomIndex = -1)
+            srand(time(NULL));
+            randomIndex = rand()%4;
+
+            if(MAPA[r+1][t] == 1 || MAPA[r][t+1] == 1)
+                ghostMove(MAPA,i,h,r,t,gBurroX,gBurroY);
+            else if(MAPA[r][t+1] == 1 || MAPA[r][t-1] == 1)
+                ghostMove(MAPA,i,h,r,t,gBurroX,gBurroY);
+            else if(MAPA[r+1][t+1] == 1 || MAPA[r-1][t-1] == 1)
+                ghostMove(MAPA,i,h,r,t,gBurroX,gBurroY);
+
+
+
+            printf("%d\n", randomIndex);
+
+            if(randomIndex == 0 && MAPA[r-1][t] != '1'){
+                r--;
+                gBurroY = r*q;
+            }
+
+            else if(randomIndex == 1 && MAPA[r+1][t] != '1'){
+                r++;
+                gBurroY = r*q;
+                }
+
+            else if(randomIndex == 2 && MAPA[r][t+1] != '1'){
+                t++;
+                gBurroX = t*q;
+
+            }
+
+            else if(randomIndex == 3 && MAPA[r][t-1] != '1'){
+                t--;
+                gBurroX = t*q;
+
+
+            }
+
 
 
         // Se chegar na borda do mapa, teleportar para outra
@@ -480,12 +500,12 @@ int main(int argc, char **argv)
                 break;
             }
         }
-        
+
          al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
         if(redraw && al_is_event_queue_empty(event_queue))
         {
-            
+
             redraw = false;
 
             al_clear_to_color(al_map_rgb(0,0,0));
@@ -493,6 +513,7 @@ int main(int argc, char **argv)
             al_draw_bitmap(mapa,0,0,0);
             al_draw_bitmap(pacman,posx,posy,0);
             al_draw_bitmap(ghost,gposX,gposY,0);
+            al_draw_bitmap(ghostBurro1, gBurroX,gBurroY,0);
             al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
             for(k=0; k <26; k++){
@@ -518,5 +539,6 @@ int main(int argc, char **argv)
     al_destroy_event_queue(event_queue);
     al_destroy_sample(sample);
     al_destroy_bitmap(ghost);
+    al_destroy_bitmap(ghostBurro1);
     return 0;
 }
