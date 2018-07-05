@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const float FPS = 6.8;
+const float FPS = 5.8;
 const int SCREEN_W = 460;
 const int SCREEN_H = 550;
 
@@ -73,14 +73,14 @@ ALLEGRO_BITMAP *pac_right   = NULL;
 ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_FONT *fonte = NULL;
-int i = 13, j = 11; //posição inicial do Pacman na matriz
+int i = 13, j = 11; //posiï¿½ï¿½o inicial do Pacman na matriz
 int g = 13, h = 12;
-int q = 20; //tamanho de cada célula no mapa
+int q = 20; //tamanho de cada cï¿½lula no mapa
 int posy = i*q;
 int posx = j*q;
 int gposY = g*q;
 int gposX = h*q;
-int k = 0, l = 0;  //variaveis usadas para aparição das bolas
+int k = 0, l = 0;  //variaveis usadas para apariï¿½ï¿½o das bolas
 
 bool key[4] = { false, false, false, false };
 bool gKey[4] = {false, false, false, false};
@@ -196,7 +196,7 @@ int inicializa() {
     al_init_font_addon();
     al_init_ttf_addon();
 
-    // Inicialização das fontes
+    // Inicializaï¿½ï¿½o das fontes
     if (!al_init_ttf_addon())
     {
         cout<< "Falha ao inicializar add-on allegro_ttf."<<endl;;
@@ -231,7 +231,7 @@ int inicializa() {
 
     return 1;
 }
-	int sim=0;
+    int lastmouth, sim=0;//duas variaveis que serÃ£o usadas p/ abrir e fechar a boca do pac
 int main(int argc, char **argv)
 {
     int pontos=0;
@@ -242,7 +242,7 @@ int main(int argc, char **argv)
         ALLEGRO_EVENT ev;
         al_wait_for_event(event_queue, &ev);
 
-        // Movimentação do Fantasma
+        // Movimentacao do Fantasma
             srand(time(NULL));
             int gMovimento = rand()%4;
 
@@ -307,6 +307,7 @@ int main(int argc, char **argv)
             {
 
                pacman = pac_up;
+                lastmouth=2; //armazena qual ultima posicao do pacman (p abrir e fechar boca)
 
                 //if(posy%20==0)
                 i--;
@@ -325,6 +326,7 @@ int main(int argc, char **argv)
                 pacman=pac_down;
                 i++;
                 posy = i*q;
+                lastmouth=0;
 
                // if(posy%20==0)
                  //   i++;
@@ -342,6 +344,7 @@ int main(int argc, char **argv)
                 pacman=pac_left;
                 j--;
                 posx = j*q;
+                lastmouth=1;
 
                // if(posx%20==0)
                  //   j--;
@@ -358,6 +361,7 @@ int main(int argc, char **argv)
                 j++;
                 pacman=pac_right;
                 posx = j*q;
+                lastmouth=3;
 
 
                 //if(posx%20==0)
@@ -369,18 +373,24 @@ int main(int argc, char **argv)
                     pontos++;
                 }
             }
+            
 
-
-        if(sim%2==0){
-				aux = pacman;
-           		pacman=shutup;  //se a variavel sim é par, redraw o pacman com boca fechada
-				redraw = true;
+        if(sim%2==0){ 
+           		pacman=shutup;  //se a variavel sim e' par, redraw o pacman com boca fechada
 			}else{
-				pacman=aux;
-				redraw = true; //se nao, da redraw nele normal
+                switch(lastmouth){ //switch para redesenhar ultima posica do pacman apos fechar boca
+                    case 0:
+                        pacman=pac_down; break;
+                    case 1:
+                        pacman=pac_left;  break;
+                    case 2:
+                         pacman=pac_up;  break;
+                    case 3:
+                        pacman=pac_right;  break;
+                }
 			}
 			sim++;
-
+            redraw=true;
 
             if(bola==0){
                 return 0;
