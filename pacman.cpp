@@ -71,14 +71,14 @@ ALLEGRO_BITMAP *pac_right   = NULL;
 ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_FONT *fonte = NULL;
-int i = 13, j = 11; //posição inicial do Pacman na matriz
+int i = 13, j = 11; //posiï¿½ï¿½o inicial do Pacman na matriz
 int g = 1, h = 1;
-int q = 20; //tamanho de cada célula no mapa
+int q = 20; //tamanho de cada cï¿½lula no mapa
 int posy = i*q;
 int posx = j*q;
 int gposY = g*q;
 int gposX = h*q;
-int k = 0, l = 0;  //variaveis usadas para aparição das bolas
+int k = 0, l = 0;  //variaveis usadas para apariï¿½ï¿½o das bolas
 
 bool key[4] = { false, false, false, false };
 bool gKey[4] = {false, false, false, false};
@@ -87,12 +87,8 @@ bool sair = false;
 
 void ghostMove(char M[][24], int i, int j, int &g, int &h, int &gposX, int &gposY) {
 
-    int auxG = g; // Para não alterarmos o valor de g e h nas condicionais
+    int auxG = g; // Para nï¿½o alterarmos o valor de g e h nas condicionais
     int auxH = h;
-    //for(int x =0; x<24; x++)
-        //for(int y=0; y<24; y++)
-           // if(MAPA[i][j]){
-
                 if(i > g && M[g+1][auxH] != '1') { // Se estiver em linhas a frente
                     g++;
                     gposY = g*q;
@@ -112,8 +108,6 @@ void ghostMove(char M[][24], int i, int j, int &g, int &h, int &gposX, int &gpos
                     h--;
                     gposX = h*q;
                 }
-
-           // }
 }
 
 
@@ -226,7 +220,7 @@ int inicializa() {
     al_init_font_addon();
     al_init_ttf_addon();
 
-    // Inicialização das fontes
+    // Inicializaï¿½ï¿½o das fontes
     if (!al_init_ttf_addon())
     {
         cout<< "Falha ao inicializar add-on allegro_ttf."<<endl;;
@@ -271,11 +265,11 @@ int main(int argc, char **argv)
     {
         ALLEGRO_EVENT ev;
         al_wait_for_event(event_queue, &ev);
+        
 
+        
 
-        ghostMove(MAPA,i,j,g,h,gposX,gposY);
-
-        /*// Movimentação do Fantasma Burro
+        /*// Movimentaï¿½ï¿½o do Fantasma Burro
             srand(time(NULL));
             int gMovimento = rand()%4;
 
@@ -407,7 +401,7 @@ int main(int argc, char **argv)
 
         if(sim%2==0){
 				aux = pacman;
-           		pacman=shutup;  //se a variavel sim é par, redraw o pacman com boca fechada
+           		pacman=shutup;  //se a variavel sim ï¿½ par, redraw o pacman com boca fechada
 				redraw = true;
 			}else{
 				pacman=aux;
@@ -486,10 +480,12 @@ int main(int argc, char **argv)
                 break;
             }
         }
+        
          al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
         if(redraw && al_is_event_queue_empty(event_queue))
         {
+            
             redraw = false;
 
             al_clear_to_color(al_map_rgb(0,0,0));
@@ -506,7 +502,7 @@ int main(int argc, char **argv)
                 }
             }
 
-
+            ghostMove(MAPA,i,j,g,h,gposX,gposY);
             al_flip_display();
 
 
