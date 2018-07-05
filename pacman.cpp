@@ -6,16 +6,24 @@
 #include <allegro5/allegro_ttf.h>
 #include <iostream>
 #include <cstdio>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace std;
 
-const float FPS = 5.8;
+const float FPS = 9;
 const int SCREEN_W = 460;
 const int SCREEN_H = 550;
 
 enum MYKEYS
 {
     KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT
+};
+
+enum GKEYS
+{
+    G_UP, G_DOWN, G_LEFT, G_RIGHT
 };
 
 
@@ -64,7 +72,7 @@ ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_FONT *fonte = NULL;
 int i = 13, j = 11; //posição inicial do Pacman na matriz
-int g = 8, h = 11;
+int g = 13, h = 12;
 int q = 20; //tamanho de cada célula no mapa
 int posy = i*q;
 int posx = j*q;
@@ -73,6 +81,7 @@ int gposX = h*q;
 int k = 0, l = 0;  //variaveis usadas para aparição das bolas
 
 bool key[4] = { false, false, false, false };
+bool gKey[4] = {false, false, false, false};
 bool redraw = true;
 bool sair = false;
 
@@ -192,8 +201,8 @@ int inicializa() {
         return -1;
     }
       // Carregando o arquivo de fonte
-     // Para usar no Ubuntu fonte = al_load_font("/usr/share/fonts/truetype/lato/Lato-Black.ttf", 28, 0);
-        fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
+      //fonte = al_load_font("/usr/share/fonts/truetype/lato/Lato-Black.ttf", 28, 0);
+      fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
         if (!fonte)
     {
         al_destroy_display(display);
@@ -231,6 +240,44 @@ int main(int argc, char **argv)
         ALLEGRO_EVENT ev;
         al_wait_for_event(event_queue, &ev);
 
+        // Movimentação do Fantasma
+            srand(time(NULL));
+            int gMovimento = rand()%4;
+
+            if(gMovimento == 1 || gKey[0])
+                if(MAPA[g-1][h] != '1')
+            {
+                gKey[0] = true;
+                gposY -= 5;
+
+                if(gposY%20==0)
+                    g--;
+            }
+
+            if(gMovimento == 2 || gKey[1])
+                if(MAPA[g+1][h] != '1'){
+                    gposY += 5;
+                    gKey[1] = true;
+                    if(gposY%20==0)
+                        g++;
+                }
+
+            if(gMovimento == 3)
+                if(MAPA[g][h+1] != '1' || gKey[2]){
+                    gposX += 5;
+                    gKey[2] = true;
+                    if(gposX%20==0)
+                        h++;
+            }
+
+            if(gMovimento == 4 || gKey[3])
+                if(MAPA[g][h-1] != '1'){
+                    gposX -= 5;
+                    gKey[1] = true;
+                    if(gposX%20==0)
+                        h--;
+            }
+
         if(ev.type == ALLEGRO_EVENT_TIMER)
         {
 
@@ -250,19 +297,15 @@ int main(int argc, char **argv)
                 posy = i*q;
             }
 
-              if(key[KEY_LEFT] && i == 14 && j == 23){
-                i = 14;
-                j = 1;
-                posx = j*q;
-                posy = i*q;
-            }
-
 
             if(key[KEY_UP] && MAPA[i-1][j] != '1')
             {
-                i--;
-                pacman=pac_up;
-                posy = i*q;
+
+                pacman = pac_up;
+                posy -= 5;
+
+                if(posy%20==0)
+                    i--;
 
                 if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
                     MAPA[i][j] = '0';
@@ -273,9 +316,12 @@ int main(int argc, char **argv)
 
             if(key[KEY_DOWN] && MAPA[i+1][j] != '1')
             {
-                i++;
+
                 pacman=pac_down;
-                posy = i*q;
+                posy += 5;
+
+                if(posy%20==0)
+                    i++;
 
                 if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
                     MAPA[i][j] = '0';
@@ -286,9 +332,12 @@ int main(int argc, char **argv)
 
             if(key[KEY_LEFT] && MAPA[i][j-1] != '1')
             {
-                j--;
+
                 pacman=pac_left;
-                posx = j*q;
+                posx -= 5;
+
+                if(posx%20==0)
+                    j--;
 
                 if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
                     MAPA[i][j] = '0';
@@ -299,9 +348,11 @@ int main(int argc, char **argv)
 
             if(key[KEY_RIGHT] && MAPA[i][j+1] != '1')
             {
-                j++;
                 pacman=pac_right;
-                posx = j*q;
+                posx += 5;
+
+                if(posx%20==0)
+                    j++;
 
                 if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
                     MAPA[i][j] = '0';
@@ -309,8 +360,6 @@ int main(int argc, char **argv)
                     pontos++;
                 }
             }
-
-
 
 
         if(sim%2==0){
@@ -386,6 +435,9 @@ int main(int argc, char **argv)
                 key[KEY_RIGHT] = true;
                 break;
 
+            // MOVIMENTACAO DO FANTASMA
+
+
             case ALLEGRO_KEY_ESCAPE:
                 sair = true;
                 break;
@@ -401,7 +453,8 @@ int main(int argc, char **argv)
 
             al_draw_bitmap(mapa,0,0,0);
             al_draw_bitmap(pacman,posx,posy,0);
-             al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
+            al_draw_bitmap(ghost,gposX,gposY,0);
+            al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
             for(k=0; k <26; k++){
                 for (l=0; l<26; l++){
@@ -425,5 +478,6 @@ int main(int argc, char **argv)
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
     al_destroy_sample(sample);
+    al_destroy_bitmap(ghost);
     return 0;
 }
