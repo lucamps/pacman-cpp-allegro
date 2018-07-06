@@ -371,7 +371,7 @@ int inicializa() {
       if (!fonte)
     {
         fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
-        return -1;
+       // return -1;
     }
         if (!fonte)
     {
@@ -519,11 +519,7 @@ int main(int argc, char **argv)
 			}
 			sim++;
 
-            if(bola==0){
-                al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                al_rest(4.8);
-                return 0;
-            }
+            
         }
         else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
         {
@@ -609,7 +605,9 @@ int main(int argc, char **argv)
 
             for(k=0; k <26; k++){
                 for (l=0; l<26; l++){
-                    if(MAPA[k][l] == '2')
+					if(bola == 0)
+						continue;
+                    else if(MAPA[k][l] == '2')
                         al_draw_bitmap(bolas,l*20,k*20,0);
                 }
             }
@@ -620,6 +618,11 @@ int main(int argc, char **argv)
 
 
         }
+		if(bola==0){
+                al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                al_rest(4.8);
+                return 0;
+            }
     }
 
     al_destroy_bitmap(mapa);
