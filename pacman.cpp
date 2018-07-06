@@ -366,8 +366,13 @@ int inicializa() {
         return -1;
     }
       // Carregando o arquivo de fonte
-      //fonte = al_load_font("/usr/share/fonts/truetype/lato/Lato-Black.ttf", 28, 0);
-      fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
+       // Carregando o arquivo de fonte tanto para Ubuntu como para Windows
+      fonte = al_load_font("/usr/share/fonts/truetype/lato/Lato-Black.ttf", 28, 0);
+      if (!fonte)
+    {
+        fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
+        return -1;
+    }
         if (!fonte)
     {
         al_destroy_display(display);
@@ -394,7 +399,7 @@ int inicializa() {
 
     return 1;
 }
-	 int lastmouth, sim=0;//duas variaveis que serão usadas p/ abrir e fechar a boca do pac
+	 int lastmouth, sim=0;//duas variaveis que serï¿½o usadas p/ abrir e fechar a boca do pac
 int main(int argc, char **argv)
 {
     int pontos=0;
