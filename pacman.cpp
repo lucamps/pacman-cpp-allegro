@@ -85,7 +85,8 @@ int gposX = h*q;
 int gBurro1X = t*q;
 int gBurro1Y = r*q;
 int randomIndex = -1;
-int lastPos = 0;
+int lastPos = -1;
+int lastSmartPos = -1;
 bool stuck = true; // Guarda a ultima decisao do fantasma burro
 
 int k = 0, l = 0;  //variaveis usadas para apari��o das bolas
@@ -94,6 +95,10 @@ bool key[4] = {false, false, false, false} ;
 bool redraw = true;
 bool sair = false;
 
+void unstuck(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY){
+
+
+}
 void ghostMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY) {
 
     // Lembrar que aqui o eixo X e controlado pelas colunas (y) e o Y pelas linhas (x)
@@ -102,22 +107,32 @@ void ghostMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gpos
     int auxX = x;
     int auxY = y;
 
+                //Desce uma linha se o pacman esta embaixo
+
                 if(i > x && M[auxX+1][y] != '1') {
+                    if(lastSmartPos == 0) return; // Se a ultima
+                    lastPos = 1;
                     x++;
                     gposY = x*q;
                 }
 
                 else if(i < x && M[auxX-1][y] != '1') {
+                    if(lastSmartPos == 1) return;
+                    lastPos = 0;
                     x--;
                     gposY = x*q;
                 }
 
                 else if(j > y && M[x][auxY+1] != '1') {
+                    if(lastSmartPos == 3) return;
+                    lastPos = 2;
                     y++;
                     gposX = y*q;
                 }
 
                 else if(j < y && M[x][auxY-1] != '1') {
+                    if(lastSmartPos == 2) return;
+                    lastPos = 3;
                     y--;
                     gposX = y*q;
                 }
@@ -175,19 +190,26 @@ void burroGhostMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int 
     }
 
     if(randomIndex == 0 && M[auxX-1][y] != '1'){
+        if(lastPos == 1) return;
+        lastPos = 0;
         x--;
         gposY = x*q;
         stuck = false;
+
+
     }
 
     else if(randomIndex == 1 && M[auxX+1][y] != '1'){
+        if(lastPos == 0) return;
+        lastPos = 1;
         x++;
         gposY = x*q;
         stuck = false;
     }
 
     else if(randomIndex == 2 && M[x][auxY+1] != '1'){
-
+        if(lastPos == 3) return;
+        lastPos = 2;
         y++;
         gposX = y*q;
         stuck = false;
@@ -195,6 +217,8 @@ void burroGhostMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int 
     }
 
     else if(randomIndex == 3 && M[x][auxY-1] != '1'){
+        if(lastPos == 2) return;
+        lastPos = 3;
         y--;
         gposX = y*q;
         stuck = false;
