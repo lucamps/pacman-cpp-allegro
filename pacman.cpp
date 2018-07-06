@@ -70,6 +70,7 @@ ALLEGRO_BITMAP *pac_down   = NULL;
 ALLEGRO_BITMAP *pac_right   = NULL;
 ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
+ALLEGRO_SAMPLE *win = NULL;
 ALLEGRO_FONT *fonte = NULL;
 ALLEGRO_BITMAP *ghostBurro1 = NULL;
 int i = 17, j = 11; //posi��o inicial do Pacman na matriz
@@ -259,10 +260,15 @@ int inicializa() {
       return -1;
    }
 
-   if (!al_reserve_samples(1)){
+   if (!al_reserve_samples(2)){
       fprintf(stderr, "failed to reserve samples!\n");
       return -1;
    }
+    win = al_load_sample("beggining.wav" );
+    if(!win){
+        printf("Audio clip sample not loaded! \n");
+        return -1;
+    }
 
     sample = al_load_sample("suspense.wav" ); //musica que sera carregada
 
@@ -499,6 +505,8 @@ int main(int argc, char **argv)
 
 
             if(bola==0){
+                al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                al_rest(4.8);
                 return 0;
             }
         }
