@@ -599,11 +599,7 @@ int main(int argc, char **argv)
 
             al_draw_bitmap(mapa,0,0,0);
             al_draw_bitmap(pacman,posx,posy,0);
-            al_draw_bitmap(ghost,gposX,gposY,0);
-            al_draw_bitmap(ghostBurro1, gBurro1X,gBurro1Y,0);
-            al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
-
-            for(k=0; k <26; k++){
+			for(k=0; k <26; k++){
                 for (l=0; l<26; l++){
 					if(bola == 0)
 						continue;
@@ -611,6 +607,11 @@ int main(int argc, char **argv)
                         al_draw_bitmap(bolas,l*20,k*20,0);
                 }
             }
+            al_draw_bitmap(ghost,gposX,gposY,0);
+            al_draw_bitmap(ghostBurro1, gBurro1X,gBurro1Y,0);
+            al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
+
+            
 
             ghostMove(MAPA,i,j,g,h,gposX,gposY);
             burroGhostMove(MAPA,i,j,r,t,gBurro1X,gBurro1Y);
