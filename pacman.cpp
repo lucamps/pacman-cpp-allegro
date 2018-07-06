@@ -28,7 +28,7 @@ enum GKEYS // Teclas do fantasma
 
 
 //matriz definindo mapa do jogo: 2 representa bolas, 1 representa paredes, 0 representa corredor
-char MAPA[24][24] = 
+char MAPA[24][24] =
 {
     "11111111111111111111111",
     "12222222222122222222221",
@@ -70,55 +70,140 @@ ALLEGRO_BITMAP *pac_down   = NULL;
 ALLEGRO_BITMAP *pac_right   = NULL;
 ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
-ALLEGRO_SAMPLE *win = NULL;
 ALLEGRO_FONT *fonte = NULL;
 ALLEGRO_BITMAP *ghostBurro1 = NULL;
-//ALLEGRO_BITMAP *ghostBurro2 = NULL;
 int i = 17, j = 11; //posi��o inicial do Pacman na matriz
 int g = 1, h = 1; // Inicio do fantasma inteligente
-int r = 1, t = 2 , w = 1, x=2 ; // r para linha e t para coluna
+int r = 1, t = 2; // r para linha e t para coluna
 int q = 20; //tamanho de cada c�lula no mapa
 
 // Variáveis de posição dos fantasmas e do pacman
 int posy = i*q;
 int posx = j*q;
-int gposY = g*q;
+int gposY = g*q; // Smart ghost
 int gposX = h*q;
-int gBurroX = t*q;
-int gBurroY = r*q;
+int gBurro1X = t*q;
+int gBurro1Y = r*q;
 int randomIndex = -1;
-int pastPos = 0;
+int lastPos = 0;
+bool stuck = true; // Guarda a ultima decisao do fantasma burro
 
 int k = 0, l = 0;  //variaveis usadas para apari��o das bolas
 
 bool key[4] = {false, false, false, false} ;
-bool gKey[4] = {false, false, false, false};
 bool redraw = true;
 bool sair = false;
 
-void ghostMove(char M[][24], int i, int j, int &g, int &h, int &gposX, int &gposY) {
+void ghostMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY) {
 
-    int auxG = g; // Para n�o alterarmos o valor de g e h nas condicionais
-    int auxH = h;
-                if(i > g && M[g+1][auxH] != '1') { // Se estiver em linhas a frente
-                    g++;
-                    gposY = g*q;
+    // Lembrar que aqui o eixo X e controlado pelas colunas (y) e o Y pelas linhas (x)
+
+    // Para nao alterarmos o valor de x e y nas condicionais
+    int auxX = x;
+    int auxY = y;
+
+                if(i > x && M[auxX+1][y] != '1') {
+                    x++;
+                    gposY = x*q;
                 }
 
-                if(i < g && M[g-1][auxH] != '1') { // Se estiver em linhas a frente
-                    g--;
-                    gposY = g*q;
+                else if(i < x && M[auxX-1][y] != '1') {
+                    x--;
+                    gposY = x*q;
                 }
 
-                if(j > h && M[g][auxH+1] != '1') { // Se estiver em linhas a frente
-                    h++;
-                    gposX = h*q;
+                else if(j > y && M[x][auxY+1] != '1') {
+                    y++;
+                    gposX = y*q;
                 }
 
-                if(j < h && M[g][auxH-1] != '1') { // Se estiver em linhas a frente
-                    h--;
-                    gposX = h*q;
+                else if(j < y && M[x][auxY-1] != '1') {
+                    y--;
+                    gposX = y*q;
                 }
+
+                else if(x == 10 && y == -1){
+                    x = 10;
+                    y = 23;
+                    gposX = y*q;
+                    gposY = x*q;
+                }
+
+                else if(x == 10 && y == 22){
+                    x = 10;
+                    y = -1;
+                    gposX = y*q;
+                    gposY = x*q;
+                }
+
+
+}
+
+void burroGhostMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY){
+
+    int auxX = x; // Necessarios pois x e y sao recebidos por referencia
+    int auxY = y;
+
+    srand(time(NULL));
+    randomIndex = rand()%4;
+
+    // Se estiver preso, sortear outra posicao
+    if(stuck) {
+        srand(time(NULL));
+        ghostMove(M,i,j,x,y,gposX,gposY);
+        stuck = false;
+        printf("stuck tentando ir para %d\n",randomIndex);
+    }
+
+    // Teleporte
+    if(auxX == 10 && auxY == -1){
+        x = 10;
+        y = 22;
+        gposX = y*q;
+        gposY = x*q;
+        printf("Entrei no portal da esquerda\n");
+        return;
+    }
+
+    else if(auxX == 10 && auxY == 23){
+        x = 10;
+        y = 0;
+        gposX = y*q;
+        gposY = x*q;
+        printf("Entrei no portal da direita\n");
+        return;
+    }
+
+    if(randomIndex == 0 && M[auxX-1][y] != '1'){
+        x--;
+        gposY = x*q;
+        stuck = false;
+    }
+
+    else if(randomIndex == 1 && M[auxX+1][y] != '1'){
+        x++;
+        gposY = x*q;
+        stuck = false;
+    }
+
+    else if(randomIndex == 2 && M[x][auxY+1] != '1'){
+
+        y++;
+        gposX = y*q;
+        stuck = false;
+
+    }
+
+    else if(randomIndex == 3 && M[x][auxY-1] != '1'){
+        y--;
+        gposX = y*q;
+        stuck = false;
+    }
+
+    else {
+        stuck = true;
+    }
+
 }
 
 
@@ -150,13 +235,8 @@ int inicializa() {
       return -1;
    }
 
-   if (!al_reserve_samples(2)){
+   if (!al_reserve_samples(1)){
       fprintf(stderr, "failed to reserve samples!\n");
-      return -1;
-   }
-     win = al_load_sample("beggining.wav" ); //musica que sera carregada
-   if (!win){
-      printf( "Audio clip sample not loaded!\n" );
       return -1;
    }
 
@@ -167,7 +247,7 @@ int inicializa() {
       return -1;
    }
     al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
-   // al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+
     if(!al_init_image_addon())
     {
         cout <<"Falha ao iniciar al_init_image_addon!" << endl;
@@ -200,8 +280,7 @@ int inicializa() {
 	shutup = al_load_bitmap("shutup.png");
 	shutup = al_load_bitmap("shutup.png");
 	ghost = al_load_bitmap("ghost.png");
-	ghostBurro1 = al_load_bitmap("ghost1.png");
-   // ghostBurro2 = al_load_bitmap("ghost2.png");
+	ghostBurro1 = al_load_bitmap("ghost.png");
 
     if(!pacman)
     {
@@ -224,21 +303,13 @@ int inicializa() {
 
     if(!ghostBurro1)
     {
-        cout << "Falha ao carregar um fantasma burro!" << endl;
-        al_destroy_display(display);
-
-        return 0;
-    }
-    if(!ghostBurro2)
-    {
-        cout << "Falha ao carregar um fantasma burro!" << endl;
+        cout << "Falha ao carregar o fantasma burro!" << endl;
         al_destroy_display(display);
 
         return 0;
     }
 
-    al_draw_bitmap(ghostBurro1,gBurroX,gBurroY,0);
-    al_draw_bitmap(ghostBurro2,gBurroX1,gBurroY1,0);
+    al_draw_bitmap(ghostBurro1,gBurro1X,gBurro1Y,0);
 
 
 
@@ -305,51 +376,10 @@ int main(int argc, char **argv)
         al_wait_for_event(event_queue, &ev);
 
 
+        if(ev.type == ALLEGRO_EVENT_TIMER){
 
 
-
-
-        if(ev.type == ALLEGRO_EVENT_TIMER)
-        {
-
-         // Movimentacao do Fantasma Burro
-            if(randomIndex = -1)
-            srand(time(NULL));
-            randomIndex = rand()%4;
-
-            if(MAPA[r+1][t] == 1 || MAPA[r][t+1] == 1)
-                ghostMove(MAPA,i,h,r,t,gBurroX,gBurroY);
-            else if(MAPA[r][t+1] == 1 || MAPA[r][t-1] == 1)
-                ghostMove(MAPA,i,h,r,t,gBurroX,gBurroY);
-            else if(MAPA[r+1][t+1] == 1 || MAPA[r-1][t-1] == 1)
-                ghostMove(MAPA,i,h,r,t,gBurroX,gBurroY);
-
-
-
-            printf("%d\n", randomIndex);
-
-            if(randomIndex == 0 && MAPA[r-1][t] != '1'){
-                r--;
-                gBurroY = r*q;
-            }
-
-            else if(randomIndex == 1 && MAPA[r+1][t] != '1'){
-                r++;
-                gBurroY = r*q;
-                }
-
-            else if(randomIndex == 2 && MAPA[r][t+1] != '1'){
-                t++;
-                gBurroX = t*q;
-
-            }
-
-            else if(randomIndex == 3 && MAPA[r][t-1] != '1'){
-                t--;
-                gBurroX = t*q;
-
-
-            }
+        /*Movimentacao do pac man*/
 
         // Se chegar na borda do mapa, teleportar para outra
             if(key[KEY_RIGHT] && i == 10 && j == 22){
@@ -445,9 +475,6 @@ int main(int argc, char **argv)
 
 
             if(bola==0){
-                al_stop_samples();
-                al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                al_rest(4.8);
                 return 0;
             }
         }
@@ -530,8 +557,7 @@ int main(int argc, char **argv)
             al_draw_bitmap(mapa,0,0,0);
             al_draw_bitmap(pacman,posx,posy,0);
             al_draw_bitmap(ghost,gposX,gposY,0);
-            al_draw_bitmap(ghostBurro1, gBurroX,gBurroY,0);
-            // al_draw_bitmap(ghostBurro2,gBurroX1,gBurroY1,0);
+            al_draw_bitmap(ghostBurro1, gBurro1X,gBurro1Y,0);
             al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
             for(k=0; k <26; k++){
@@ -542,6 +568,7 @@ int main(int argc, char **argv)
             }
 
             ghostMove(MAPA,i,j,g,h,gposX,gposY);
+            burroGhostMove(MAPA,i,j,r,t,gBurro1X,gBurro1Y);
             al_flip_display();
 
 
@@ -556,7 +583,6 @@ int main(int argc, char **argv)
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
     al_destroy_sample(sample);
-    al_destroy_sample(win);
     al_destroy_bitmap(ghost);
     al_destroy_bitmap(ghostBurro1);
     return 0;
