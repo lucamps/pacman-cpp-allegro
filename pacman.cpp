@@ -70,11 +70,13 @@ ALLEGRO_BITMAP *pac_down   = NULL;
 ALLEGRO_BITMAP *pac_right   = NULL;
 ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
+ALLEGRO_SAMPLE *win = NULL;
 ALLEGRO_FONT *fonte = NULL;
 ALLEGRO_BITMAP *ghostBurro1 = NULL;
+//ALLEGRO_BITMAP *ghostBurro2 = NULL;
 int i = 17, j = 11; //posi��o inicial do Pacman na matriz
 int g = 1, h = 1; // Inicio do fantasma inteligente
-int r = 1, t = 2; // r para linha e t para coluna
+int r = 1, t = 2 , w = 1, x=2 ; // r para linha e t para coluna
 int q = 20; //tamanho de cada c�lula no mapa
 
 // Variáveis de posição dos fantasmas e do pacman
@@ -148,8 +150,13 @@ int inicializa() {
       return -1;
    }
 
-   if (!al_reserve_samples(1)){
+   if (!al_reserve_samples(2)){
       fprintf(stderr, "failed to reserve samples!\n");
+      return -1;
+   }
+     win = al_load_sample("beggining.wav" ); //musica que sera carregada
+   if (!win){
+      printf( "Audio clip sample not loaded!\n" );
       return -1;
    }
 
@@ -160,7 +167,7 @@ int inicializa() {
       return -1;
    }
     al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
-
+   // al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
     if(!al_init_image_addon())
     {
         cout <<"Falha ao iniciar al_init_image_addon!" << endl;
@@ -193,7 +200,8 @@ int inicializa() {
 	shutup = al_load_bitmap("shutup.png");
 	shutup = al_load_bitmap("shutup.png");
 	ghost = al_load_bitmap("ghost.png");
-	ghostBurro1 = al_load_bitmap("ghost.png");
+	ghostBurro1 = al_load_bitmap("ghost1.png");
+   // ghostBurro2 = al_load_bitmap("ghost2.png");
 
     if(!pacman)
     {
@@ -216,13 +224,21 @@ int inicializa() {
 
     if(!ghostBurro1)
     {
-        cout << "Falha ao carregar o fantasma burro!" << endl;
+        cout << "Falha ao carregar um fantasma burro!" << endl;
+        al_destroy_display(display);
+
+        return 0;
+    }
+    if(!ghostBurro2)
+    {
+        cout << "Falha ao carregar um fantasma burro!" << endl;
         al_destroy_display(display);
 
         return 0;
     }
 
     al_draw_bitmap(ghostBurro1,gBurroX,gBurroY,0);
+    al_draw_bitmap(ghostBurro2,gBurroX1,gBurroY1,0);
 
 
 
@@ -335,8 +351,6 @@ int main(int argc, char **argv)
 
             }
 
-
-
         // Se chegar na borda do mapa, teleportar para outra
             if(key[KEY_RIGHT] && i == 10 && j == 22){
 
@@ -431,6 +445,9 @@ int main(int argc, char **argv)
 
 
             if(bola==0){
+                al_stop_samples();
+                al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                al_rest(4.8);
                 return 0;
             }
         }
@@ -514,6 +531,7 @@ int main(int argc, char **argv)
             al_draw_bitmap(pacman,posx,posy,0);
             al_draw_bitmap(ghost,gposX,gposY,0);
             al_draw_bitmap(ghostBurro1, gBurroX,gBurroY,0);
+            // al_draw_bitmap(ghostBurro2,gBurroX1,gBurroY1,0);
             al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
             for(k=0; k <26; k++){
@@ -538,6 +556,7 @@ int main(int argc, char **argv)
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
     al_destroy_sample(sample);
+    al_destroy_sample(win);
     al_destroy_bitmap(ghost);
     al_destroy_bitmap(ghostBurro1);
     return 0;
