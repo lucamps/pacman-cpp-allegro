@@ -394,7 +394,7 @@ int inicializa() {
 
     return 1;
 }
-	int sim=0;
+	 int lastmouth, sim=0;//duas variaveis que serão usadas p/ abrir e fechar a boca do pac
 int main(int argc, char **argv)
 {
     int pontos=0;
@@ -435,6 +435,7 @@ int main(int argc, char **argv)
 
 
                pacman = pac_up;
+				lastmouth=2;
 
                 i--;
                 posy = i*q;
@@ -449,7 +450,7 @@ int main(int argc, char **argv)
             if(key[KEY_DOWN] && MAPA[i+1][j] != '1')
             {
 
-
+				lastmouth=0;
                 pacman=pac_down;
                 i++;
                 posy = i*q;
@@ -464,7 +465,7 @@ int main(int argc, char **argv)
             if(key[KEY_LEFT] && MAPA[i][j-1] != '1')
             {
 
-
+				lastmouth=1;
                 pacman=pac_left;
                 j--;
                 posx = j*q;
@@ -479,7 +480,7 @@ int main(int argc, char **argv)
 
             if(key[KEY_RIGHT] && MAPA[i][j+1] != '1')
             {
-
+				lastmouth=3;
                 j++;
                 pacman=pac_right;
                 posx = j*q;
@@ -500,9 +501,18 @@ int main(int argc, char **argv)
 			}else{
 				pacman=aux;
 				redraw = true; //se nao, da redraw nele normal
+                switch(lastmouth){ //switch para redesenhar ultima posica do pacman apos fechar boca
+                    case 0:
+                        pacman=pac_down; break;
+                    case 1:
+                        pacman=pac_left;  break;
+                    case 2:
+                         pacman=pac_up;  break;
+                    case 3:
+                        pacman=pac_right;  break;
+                }
 			}
 			sim++;
-
 
             if(bola==0){
                 al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
