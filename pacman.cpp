@@ -310,7 +310,7 @@ int inicializa() {
 	shutup = al_load_bitmap("shutup.png");
 	shutup = al_load_bitmap("shutup.png");
 	ghost = al_load_bitmap("ghost.png");
-	ghostBurro1 = al_load_bitmap("ghost.png");
+	ghostBurro1 = al_load_bitmap("gburro1.png");
 
     if(!pacman)
     {
