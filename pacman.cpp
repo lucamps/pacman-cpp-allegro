@@ -89,7 +89,7 @@ ALLEGRO_FONT *fonte = NULL;
 ALLEGRO_BITMAP *azul = NULL;
 int i = 17, j = 11; //Posicao do PacMan
 int g = 8, h = 11; // Posicao do Blinky
-int r = 9, t = 11; // Posicao do Azul
+int r = 8, t = 11; // Posicao do Azul
 int q = 20; //tamanho de cada celula no mapa
 
 // Variáveis de posicao dos fantasmas e do pacman
@@ -433,9 +433,6 @@ int inicializa() {
     al_draw_bitmap(azul,azulX,azulY,0);
 
 
-
-
-
     bolas = al_load_bitmap("bolas.png");
 
     if(!bolas)
@@ -490,7 +487,8 @@ int inicializa() {
 
     return 1;
 }
-	 int lastmouth, sim=0;//duas variaveis que ser�o usadas p/ abrir e fechar a boca do pac
+	 int lastmouth, sim=0;//duas variaveis que serao usadas p/ abrir e fechar a boca do pac
+
 int main(int argc, char **argv)
 {
     int pontos=0;
@@ -700,6 +698,7 @@ int main(int argc, char **argv)
             }
             al_draw_bitmap(blinky,bX,bY,0);
             al_draw_bitmap(azul, azulX,azulY,0);
+
             al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
             
