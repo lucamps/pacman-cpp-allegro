@@ -9,12 +9,26 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cmath>
 
 using namespace std;
 
 const float FPS = 6.8;
 const int SCREEN_W = 460;
 const int SCREEN_H = 550;
+
+struct Info{   //struct usado para manipular as informacoes da IA do Blinky
+    double dist;
+    int x;
+    int y;
+    char seta;
+};
+
+double distancia(int x1,int y1,int x2,int y2){ //funcao usada para a IA do Blinky
+
+    return abs(sqrt((x2 - x1)*(x2 - x1) +  (y2 - y1)*(y2 - y1)));
+    
+}
 
 enum MYKEYS
 {
@@ -61,7 +75,7 @@ ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 ALLEGRO_TIMER *timer = NULL;
 ALLEGRO_BITMAP *mapa   = NULL;
 ALLEGRO_BITMAP *pacman   = NULL;
-ALLEGRO_BITMAP *ghost   = NULL;
+ALLEGRO_BITMAP *blinky   = NULL;
 ALLEGRO_BITMAP *shutup   = NULL;
 ALLEGRO_BITMAP *aux   = NULL;   //p abrir e fechar boca pacman
 ALLEGRO_BITMAP *pac_up   = NULL;
@@ -72,35 +86,112 @@ ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_SAMPLE *win = NULL;
 ALLEGRO_FONT *fonte = NULL;
-ALLEGRO_BITMAP *ghostBurro1 = NULL;
-int i = 17, j = 11; //posiï¿½ï¿½o inicial do Pacman na matriz
-int g = 1, h = 1; // Inicio do fantasma inteligente
-int r = 1, t = 2; // r para linha e t para coluna
-int q = 20; //tamanho de cada cï¿½lula no mapa
+ALLEGRO_BITMAP *azul = NULL;
+int i = 17, j = 11; //Posicao do PacMan
+int g = 8, h = 11; // Posicao do Blinky
+int r = 9, t = 11; // Posicao do Azul
+int q = 20; //tamanho de cada celula no mapa
 
-// VariÃ¡veis de posiÃ§Ã£o dos fantasmas e do pacman
+// VariÃ¡veis de posicao dos fantasmas e do pacman
 int posy = i*q;
 int posx = j*q;
-int gposY = g*q; // Smart ghost
-int gposX = h*q;
-int gBurro1X = t*q;
-int gBurro1Y = r*q;
+int bY = g*q; // Posições do Blinky
+int bX = h*q;
+int azulX = t*q; //Posicoes do Azul
+int azulY = r*q;
 int randomIndex = -1;
 int lastPos = -1;
 int lastSmartPos = -1;
 bool stuck = true; // Guarda a ultima decisao do fantasma burro
 
-int k = 0, l = 0;  //variaveis usadas para apariï¿½ï¿½o das bolas
+int k = 0, l = 0;  //variaveis usadas para aparicao das bolas
+
+int ulx=g;  //ultimas posicoes, usado pro Blinky 
+int uly=h;
 
 bool key[4] = {false, false, false, false} ;
 bool redraw = true;
 bool sair = false;
 
-void unstuck(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY){
 
+int c;
+void blinkyMove(char M[][24], int i, int j, int &x, int &y, int &bX, int &bY) {
+                //Desce uma linha se o pacman esta embaixo
+				if((x==8) && (y==11) && (j<=y)) { //ifs para o blinky nao entrar na zona de nascimento
+					ulx=x;
+					uly=y;
+					y--;
+                    bX = y*q;
+					return;
+				}else if((x==8) && (y==11) && (j>=y)) {
+					ulx=x;
+					uly=y;
+					y++;
+                    bX = y*q;
+					return;
+				}
+                Info vai[4]; //calculo das distancias das 4 posicoes ao redor de blinky
+                vai[0].dist= distancia(x+1,y,i,j); vai[0].x=x+1; vai[0].y=y;vai[0].seta='S';
+                vai[1].dist= distancia(x,y-1,i,j); vai[1].x=x; vai[1].y=y-1;vai[1].seta='A';
+                vai[2].dist= distancia(x-1,y,i,j); vai[2].x=x-1; vai[2].y=y;vai[2].seta='W';
+                vai[3].dist= distancia(x,y+1,i,j); vai[3].x=x; vai[3].y=y+1;vai[3].seta='D';
+                
+                double less=1000;
+                int which=1000;
+                for(c=0;c<4;c++){  //vendo qual distancia é menor e ao mesmo tempo acessivel
+                        if((vai[c].dist<less) && (M[vai[c].x][vai[c].y]!='1')){
+                            if((vai[c].x!=ulx) || (vai[c].y!=uly)){
+                              less=vai[c].dist;
+                              which=c;
+                            }
+                        }
+
+
+                }
+				ulx=x;
+				uly=y;
+
+				cout<<less<<" e orientacao: "<<which<<endl;
+                
+                if(which==0) {   //indo pela menor distancia
+                    x++;
+                    bY = x*q;
+                }
+
+                else if(which==2) {
+                    x--;
+                    bY = x*q;
+                }
+
+                else if(which==3) {
+                    y++;
+                    bX = y*q;
+                }
+
+                else if(which==1) {
+                    y--;
+                    bX = y*q;
+                }
+
+                if(x == 10 && y == -1){
+                    x = 10;
+                    y = 23;
+                    bX = y*q;
+                    bY = x*q;
+                }
+
+                else if(x == 10 && y == 22){
+                    x = 10;
+                    y = -1;
+                    bX = y*q;
+                    bY = x*q;
+                }
 
 }
-void ghostMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY) {
+
+
+
+void semiSmart(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY) {
 
     // Lembrar que aqui o eixo X e controlado pelas colunas (y) e o Y pelas linhas (x)
 
@@ -155,7 +246,7 @@ void ghostMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gpos
 
 }
 
-void burroGhostMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY){
+void randomMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY){
 
     int auxX = x; // Necessarios pois x e y sao recebidos por referencia
     int auxY = y;
@@ -166,7 +257,7 @@ void burroGhostMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int 
     // Se estiver preso, sortear outra posicao
     if(stuck) {
         srand(time(NULL));
-        ghostMove(M,i,j,x,y,gposX,gposY);
+        semiSmart(M,i,j,x,y,gposX,gposY);
         stuck = false;
         printf("stuck tentando ir para %d\n",randomIndex);
     }
@@ -309,8 +400,8 @@ int inicializa() {
     pac_right = al_load_bitmap("pac_right.png");
 	shutup = al_load_bitmap("shutup.png");
 	shutup = al_load_bitmap("shutup.png");
-	ghost = al_load_bitmap("ghost.png");
-	ghostBurro1 = al_load_bitmap("gburro1.png");
+	blinky = al_load_bitmap("blinky.png");
+	azul = al_load_bitmap("azul.png");
 
     if(!pacman)
     {
@@ -321,25 +412,25 @@ int inicializa() {
     }
     al_draw_bitmap(pacman,posx,posy,0);
 
-     if(!ghost)
+     if(!blinky)
     {
-        cout << "Falha ao carregar o fantasma!" << endl;
+        cout << "Falha ao carregar o Blinky!" << endl;
         al_destroy_display(display);
 
         return 0;
     }
 
-    al_draw_bitmap(ghost,gposX,gposY,0);
+    al_draw_bitmap(blinky,bX,bY,0);
 
-    if(!ghostBurro1)
+    if(!azul)
     {
-        cout << "Falha ao carregar o fantasma burro!" << endl;
+        cout << "Falha ao carregar o fantasma Azul!" << endl;
         al_destroy_display(display);
 
         return 0;
     }
 
-    al_draw_bitmap(ghostBurro1,gBurro1X,gBurro1Y,0);
+    al_draw_bitmap(azul,azulX,azulY,0);
 
 
 
@@ -607,14 +698,14 @@ int main(int argc, char **argv)
                         al_draw_bitmap(bolas,l*20,k*20,0);
                 }
             }
-            al_draw_bitmap(ghost,gposX,gposY,0);
-            al_draw_bitmap(ghostBurro1, gBurro1X,gBurro1Y,0);
+            al_draw_bitmap(blinky,bX,bY,0);
+            al_draw_bitmap(azul, azulX,azulY,0);
             al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
             
 
-            ghostMove(MAPA,i,j,g,h,gposX,gposY);
-            burroGhostMove(MAPA,i,j,r,t,gBurro1X,gBurro1Y);
+            blinkyMove(MAPA,i,j,g,h,bX,bY);
+            randomMove(MAPA,i,j,r,t,azulX,azulY);
             al_flip_display();
 
 
@@ -634,7 +725,7 @@ int main(int argc, char **argv)
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
     al_destroy_sample(sample);
-    al_destroy_bitmap(ghost);
-    al_destroy_bitmap(ghostBurro1);
+    al_destroy_bitmap(blinky);
+    al_destroy_bitmap(azul);
     return 0;
 }
