@@ -27,7 +27,7 @@ struct Info{   //struct usado para manipular as informacoes da IA do Blinky
 double distancia(int x1,int y1,int x2,int y2){ //funcao usada para a IA do Blinky
 
     return abs(sqrt((x2 - x1)*(x2 - x1) +  (y2 - y1)*(y2 - y1)));
-    
+
 }
 
 enum MYKEYS
@@ -35,13 +35,8 @@ enum MYKEYS
     KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT
 };
 
-enum GKEYS // Teclas do fantasma
-{
-    G_UP, G_DOWN, G_LEFT, G_RIGHT
-};
 
-
-//matriz definindo mapa do jogo: 2 representa bolas, 1 representa paredes, 0 representa corredor
+// Matriz definindo mapa do jogo: 2 representa bolas, 1 representa paredes, 0 representa corredor
 char MAPA[24][24] =
 {
     "11111111111111111111111",
@@ -53,7 +48,7 @@ char MAPA[24][24] =
     "12222212222122221222221",
     "11111211110101111211111",
     "11111210000000001211111",
-    "11111210111011101211111",
+    "11111210111111101211111",
     "00000000111011100000000",
     "11111210111011101211111",
     "11111210111111101211111",
@@ -68,45 +63,60 @@ char MAPA[24][24] =
     "12222222222222222222221",
     "11111111111111111111111",
 };
+int ultimoRandom=0;
+
 int bola=183; //numero de bolinhas no mapa
 
 ALLEGRO_DISPLAY *display = NULL;
 ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 ALLEGRO_TIMER *timer = NULL;
 ALLEGRO_BITMAP *mapa   = NULL;
+ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_BITMAP *pacman   = NULL;
-ALLEGRO_BITMAP *blinky   = NULL;
-ALLEGRO_BITMAP *shutup   = NULL;
-ALLEGRO_BITMAP *aux   = NULL;   //p abrir e fechar boca pacman
 ALLEGRO_BITMAP *pac_up   = NULL;
 ALLEGRO_BITMAP *pac_left   = NULL;
 ALLEGRO_BITMAP *pac_down   = NULL;
 ALLEGRO_BITMAP *pac_right   = NULL;
-ALLEGRO_BITMAP *bolas   = NULL;
+ALLEGRO_BITMAP *shutup   = NULL;
+ALLEGRO_BITMAP *aux   = NULL;   //p abrir e fechar boca pacman
+ALLEGRO_BITMAP *blinky   = NULL;
+ALLEGRO_BITMAP *ghostAmarelo = NULL;
+ALLEGRO_BITMAP *ghostVerde = NULL;
+ALLEGRO_BITMAP *azul = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_SAMPLE *win = NULL;
 ALLEGRO_FONT *fonte = NULL;
-ALLEGRO_BITMAP *azul = NULL;
+
 int i = 17, j = 11; //Posicao do PacMan
-int g = 8, h = 11; // Posicao do Blinky
-int r = 8, t = 11; // Posicao do Azul
+int g = 1, h = 1; // Posicao do Blinky
+int r = 1, t = 22; // Posicao do Azul
+int aX = 1, aY = 21; // Posicao do fantasma Amarelo
+int vX = 7, vY = 11; // Posicao do fantasma Verde
+
+int k = 0, l = 0;  //variaveis usadas para aparicao das bolas
 int q = 20; //tamanho de cada celula no mapa
 
-// VariÃ¡veis de posicao dos fantasmas e do pacman
+// Variveis de posicao dos fantasmas e do pacman
 int posy = i*q;
 int posx = j*q;
 int bY = g*q; // Posições do Blinky
 int bX = h*q;
 int azulX = t*q; //Posicoes do Azul
 int azulY = r*q;
+int amareloX = aX * q;
+int amareloY = aY * q;
+int verdeX = vX *q;
+int verdeY = vY *q;
 int randomIndex = -1;
 int lastPos = -1;
 int lastSmartPos = -1;
+int lastAmareloPos = -1;
+int lastAzulPos = -1;
+int lastVerdePos = -1;
 bool stuck = true; // Guarda a ultima decisao do fantasma burro
 
-int k = 0, l = 0;  //variaveis usadas para aparicao das bolas
 
-int ulx=g;  //ultimas posicoes, usado pro Blinky 
+int ulx=g;  //ultimas posicoes, usado pro Blinky
 int uly=h;
 
 bool key[4] = {false, false, false, false} ;
@@ -135,7 +145,7 @@ void blinkyMove(char M[][24], int i, int j, int &x, int &y, int &bX, int &bY) {
                 vai[1].dist= distancia(x,y-1,i,j); vai[1].x=x; vai[1].y=y-1;vai[1].seta='A';
                 vai[2].dist= distancia(x-1,y,i,j); vai[2].x=x-1; vai[2].y=y;vai[2].seta='W';
                 vai[3].dist= distancia(x,y+1,i,j); vai[3].x=x; vai[3].y=y+1;vai[3].seta='D';
-                
+
                 double less=1000;
                 int which=1000;
                 for(c=0;c<4;c++){  //vendo qual distancia é menor e ao mesmo tempo acessivel
@@ -151,8 +161,7 @@ void blinkyMove(char M[][24], int i, int j, int &x, int &y, int &bX, int &bY) {
 				ulx=x;
 				uly=y;
 
-				cout<<less<<" e orientacao: "<<which<<endl;
-                
+
                 if(which==0) {   //indo pela menor distancia
                     x++;
                     bY = x*q;
@@ -189,9 +198,7 @@ void blinkyMove(char M[][24], int i, int j, int &x, int &y, int &bX, int &bY) {
 
 }
 
-
-
-void semiSmart(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY) {
+void semiSmart(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY, int &lastThisPos) {
 
     // Lembrar que aqui o eixo X e controlado pelas colunas (y) e o Y pelas linhas (x)
 
@@ -202,29 +209,29 @@ void semiSmart(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gpos
                 //Desce uma linha se o pacman esta embaixo
 
                 if(i > x && M[auxX+1][y] != '1') {
-                    if(lastSmartPos == 0) return; // Se a ultima
-                    lastPos = 1;
+                    if(lastThisPos == 0) return; // Se a ultima
+                    lastThisPos = 1;
                     x++;
                     gposY = x*q;
                 }
 
                 else if(i < x && M[auxX-1][y] != '1') {
-                    if(lastSmartPos == 1) return;
-                    lastPos = 0;
+                    if(lastThisPos == 1) return;
+                    lastThisPos = 0;
                     x--;
                     gposY = x*q;
                 }
 
                 else if(j > y && M[x][auxY+1] != '1') {
-                    if(lastSmartPos == 3) return;
-                    lastPos = 2;
+                    if(lastThisPos == 3) return;
+                    lastThisPos = 2;
                     y++;
                     gposX = y*q;
                 }
 
                 else if(j < y && M[x][auxY-1] != '1') {
-                    if(lastSmartPos == 2) return;
-                    lastPos = 3;
+                    if(lastThisPos == 2) return;
+                    lastThisPos = 3;
                     y--;
                     gposX = y*q;
                 }
@@ -246,21 +253,22 @@ void semiSmart(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gpos
 
 }
 
-void randomMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY){
+void randomMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY, int phantom){
 
     int auxX = x; // Necessarios pois x e y sao recebidos por referencia
     int auxY = y;
 
-    srand(time(NULL));
+    srand(time(0));
+    randomIndex= rand()%4;
+
+    if(phantom == 1) srand(time(0));
     randomIndex = rand()%4;
 
-    // Se estiver preso, sortear outra posicao
-    if(stuck) {
-        srand(time(NULL));
-        semiSmart(M,i,j,x,y,gposX,gposY);
-        stuck = false;
-        printf("stuck tentando ir para %d\n",randomIndex);
-    }
+    if(phantom == 2)
+    srand(time(0));
+    randomIndex = rand()%4;
+
+
 
     // Teleporte
     if(auxX == 10 && auxY == -1){
@@ -319,6 +327,14 @@ void randomMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gpo
     else {
         stuck = true;
     }
+
+    // Se estiver preso, sortear outra posicao
+    if(stuck) {
+        //srand(time(NULL));
+        semiSmart(M,i,j,x,y,gposX,gposY, randomIndex);
+        stuck = false;
+    }
+
 
 }
 
@@ -399,9 +415,10 @@ int inicializa() {
     pac_left = al_load_bitmap("pac_left.png");
     pac_right = al_load_bitmap("pac_right.png");
 	shutup = al_load_bitmap("shutup.png");
-	shutup = al_load_bitmap("shutup.png");
 	blinky = al_load_bitmap("blinky.png");
 	azul = al_load_bitmap("azul.png");
+	ghostAmarelo = al_load_bitmap("amarelo.png");
+	ghostVerde = al_load_bitmap("verde.png");
 
     if(!pacman)
     {
@@ -431,6 +448,26 @@ int inicializa() {
     }
 
     al_draw_bitmap(azul,azulX,azulY,0);
+
+    if(!ghostAmarelo)
+    {
+        cout << "Falha ao carregar o fantasma Amarelo!" << endl;
+        al_destroy_display(display);
+
+        return 0;
+    }
+
+    al_draw_bitmap(ghostAmarelo,amareloX,amareloY,0);
+
+    if(!ghostVerde)
+    {
+        cout << "Falha ao carregar o fantasma Verde!" << endl;
+        al_destroy_display(display);
+
+        return 0;
+    }
+
+    al_draw_bitmap(ghostAmarelo,amareloX,amareloY,0);
 
 
     bolas = al_load_bitmap("bolas.png");
@@ -480,7 +517,6 @@ int inicializa() {
     al_register_event_source(event_queue, al_get_display_event_source(display));
     al_register_event_source(event_queue, al_get_timer_event_source(timer));
     al_register_event_source(event_queue, al_get_keyboard_event_source());
-
     al_clear_to_color(al_map_rgb(0,0,0));
     al_flip_display();
     al_start_timer(timer);
@@ -608,7 +644,7 @@ int main(int argc, char **argv)
 			}
 			sim++;
 
-            
+
         }
         else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
         {
@@ -688,6 +724,12 @@ int main(int argc, char **argv)
 
             al_draw_bitmap(mapa,0,0,0);
             al_draw_bitmap(pacman,posx,posy,0);
+
+            al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
+            blinkyMove(MAPA,i,j,g,h,bX,bY);
+
+
+
 			for(k=0; k <26; k++){
                 for (l=0; l<26; l++){
 					if(bola == 0)
@@ -696,15 +738,16 @@ int main(int argc, char **argv)
                         al_draw_bitmap(bolas,l*20,k*20,0);
                 }
             }
+
+            al_draw_bitmap(ghostAmarelo,amareloX,amareloY,0);
             al_draw_bitmap(blinky,bX,bY,0);
+            al_draw_bitmap(ghostVerde,verdeX,verdeY,0);
             al_draw_bitmap(azul, azulX,azulY,0);
+            randomMove(MAPA,i,j,r,t,azulX,azulY,0);
+            randomMove(MAPA,i,j,aX,aY,amareloX,amareloY,1);
+            randomMove(MAPA,i,j,vX,vY,verdeX,verdeY,2);
 
-            al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
-            
-
-            blinkyMove(MAPA,i,j,g,h,bX,bY);
-            randomMove(MAPA,i,j,r,t,azulX,azulY);
             al_flip_display();
 
 
@@ -726,5 +769,6 @@ int main(int argc, char **argv)
     al_destroy_sample(sample);
     al_destroy_bitmap(blinky);
     al_destroy_bitmap(azul);
+    al_destroy_bitmap(ghostAmarelo);
     return 0;
 }
