@@ -32,8 +32,12 @@ double distancia(int x1,int y1,int x2,int y2){
 
 }
 
-enum MYKEYS
-{
+//Variaveis para a movimentação do PacMan
+//1= esquerda, 2=baixo, 3=direita, 4=cima.
+int intencao = 0;	//intençao de movimento atual
+int anterior = 0;	//intenção anterior de movimento
+
+enum MYKEYS{
     KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT
 };
 
@@ -127,7 +131,7 @@ int uly=h;
 //Auxiliares para controlar abrir e fechar da boca do pacman
 int lastmouth, sim=0;
 
-bool key[4] = {false, false, false, false};
+//bool key[4] = {false, false, false, false};
 bool redraw = true;
 bool sair = false;
 
@@ -522,75 +526,170 @@ int main(int argc, char **argv)
         /*Movimentacao do pac man*/
 
         // Se chegar na borda do mapa, teleportar para outra
-            if(key[KEY_RIGHT] && i == 10 && j == 22){
+			if(intencao==3 && i == 10 && j == 22){
                 i = 10;
                 j = -1;
                 posx = j*q;
                 posy = i*q;
             }
 
-             if(key[KEY_LEFT] && i == 10 && j == -1){
+             if(intencao==1 && i == 10 && j == -1){
                 i = 10;
                 j = 23;
                 posx = j*q;
                 posy = i*q;
             }
+		//fim do teleporte//
 
-            if(key[KEY_UP] && MAPA[i-1][j] != '1'){
-
-                pacman = pac_up;
-                lastmouth=2;
-                i--;
-                posy = i*q;
-
-                //Se passa pela bola, a bola some
+		if(intencao==4){
+			if(MAPA[i-1][j] != '1'){
+				pacman=pac_up;
+				lastmouth=2;
+				i--;
+				posy = i*q;
+				anterior=4;
+				
+			}
+			else{
+				if(anterior==1 && MAPA[i][j-1] != '1'){
+				
+					pacman=pac_left;
+					j--;
+					posx = j*q;
+				
+					
+				}
+				if(anterior==3 && MAPA[i][j+1] != '1'){
+		
+					lastmouth=3;
+					pacman=pac_right;
+					j++;
+					posx = j*q;
+			
+					
+				}
+			}
+			//Se passa pela bola, a bola some
                 if(MAPA[i][j] == '2'){
                     MAPA[i][j] = '0';
                     bola--;
                     pontos++;
+
                 }
-            }
+		}
+		
+		
 
-            if(key[KEY_DOWN] && MAPA[i+1][j] != '1'){
 
-				pacman=pac_down;
-				lastmouth=0;
-                i++;
-                posy = i*q;
-
-                if(MAPA[i][j] == '2'){
+			if(intencao==2){
+				if(MAPA[i+1][j] != '1'){
+					pacman=pac_down;
+					lastmouth=0;
+					i++;
+					posy = i*q;
+					anterior=2;
+				}
+				else{
+					if(anterior==1 && MAPA[i][j-1] != '1'){
+						
+						pacman=pac_left;
+						j--;
+						posx = j*q;
+					
+					}
+					if(anterior==3 && MAPA[i][j+1] != '1'){
+						
+						lastmouth=3;
+						pacman=pac_right;
+						j++;
+						posx = j*q;
+						
+						
+					}	
+				}
+				if(MAPA[i][j] == '2'){
                     MAPA[i][j] = '0';
                     bola--;
                     pontos++;
                 }
-            }
+			}
+			
 
-            if(key[KEY_LEFT] && MAPA[i][j-1] != '1'){
-
-                pacman=pac_left;
-				lastmouth=1;
-                j--;
-                posx = j*q;
-
-                if(MAPA[i][j] == '2'){
+			if(intencao==1){
+				if(MAPA[i][j-1] != '1'){
+					pacman=pac_left;
+					lastmouth=1;
+					j--;
+					posx = j*q;
+					anterior=1;
+				}
+				else{
+					if(anterior==2 && MAPA[i+1][j] != '1'){
+					
+						lastmouth=0;
+						pacman=pac_down;
+						i++;
+						posy = i*q;
+					
+						
+					}
+					if(anterior==4 && MAPA[i-1][j] != '1'){
+					
+						lastmouth=2;
+						pacman=pac_up;
+						i--;
+						posy = i*q;
+					
+						
+						
+					}
+					
+				}
+				if(MAPA[i][j] == '2'){
                     MAPA[i][j] = '0';
                     bola--;
                     pontos++;
                 }
-            }
+			}
+			
+           
 
-            if(key[KEY_RIGHT] && MAPA[i][j+1] != '1'){
-                pacman=pac_right;
-				lastmouth=3;
-                j++;
-                posx = j*q;
-
-                if(MAPA[i][j] == '2'){
+			if(intencao==3){ 
+				if(MAPA[i][j+1] != '1'){
+					pacman=pac_right;
+					lastmouth=3;
+					j++;
+					posx = j*q;
+					anterior=3;
+				}
+				else{
+					if(anterior==2 && MAPA[i+1][j] != '1'){
+						lastmouth=0;
+						pacman=pac_down;
+						i++;
+						posy = i*q;
+						
+						
+					}
+					if(anterior==4 && MAPA[i-1][j] != '1'){
+						
+						lastmouth=2;
+						pacman=pac_up;
+						i--;
+						posy = i*q;
+						
+						
+					}
+					
+				}
+				if(MAPA[i][j] == '2'){
                     MAPA[i][j] = '0';
                     bola--;
                     pontos++;
                 }
-            }
+			}
+			
+
 
 
         // Controle do abrir e fechar da boca do pacman
@@ -621,62 +720,52 @@ int main(int argc, char **argv)
 
         else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
             break;
-
-        else if(ev.type == ALLEGRO_EVENT_KEY_DOWN){
-
-            switch(ev.keyboard.keycode){
-            case ALLEGRO_KEY_UP:
-                key[KEY_UP] = false;
-                break;
-
-            case ALLEGRO_KEY_DOWN:
-                key[KEY_DOWN] = false;
-                break;
-
-            case ALLEGRO_KEY_LEFT:
-                key[KEY_LEFT] = false;
-                break;
-
-            case ALLEGRO_KEY_RIGHT:
-                key[KEY_RIGHT] = false;
-                break;
-            }
-        }
-
-        else if(ev.type == ALLEGRO_EVENT_KEY_UP){
-
-                key[KEY_UP] = false;
-                key[KEY_DOWN] = false;
-                key[KEY_LEFT] = false;
-                key[KEY_RIGHT] = false;
-
+		
+		
+		else if(ev.type == ALLEGRO_EVENT_KEY_DOWN)
+        {
             switch(ev.keyboard.keycode)
             {
             case ALLEGRO_KEY_UP:
-
-                key[KEY_UP] = true;
+				anterior=intencao;
+                
+				intencao= 4;
                 break;
 
             case ALLEGRO_KEY_DOWN:
-
-                key[KEY_DOWN] = true;
+				anterior=intencao;
+             
+				intencao=2;
                 break;
 
             case ALLEGRO_KEY_LEFT:
-
-                key[KEY_LEFT] = true;
+				anterior=intencao;
+              
+				intencao=1;
                 break;
 
             case ALLEGRO_KEY_RIGHT:
-
-                key[KEY_RIGHT] = true;
+				anterior=intencao;
+             
+				intencao=3;
                 break;
-
+			
+            }
+        }
+		
+        
+		
+		else if(ev.type == ALLEGRO_EVENT_KEY_UP)
+        {
+			switch(ev.keyboard.keycode)
+            {	
             case ALLEGRO_KEY_ESCAPE:
                 sair = true;
                 break;
-            }
+			} 
         }
+		
+        
 
         al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
@@ -684,11 +773,12 @@ int main(int argc, char **argv)
 
             redraw = false;
 
-            al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
+            
             al_clear_to_color(al_map_rgb(0,0,0));
 
             al_draw_bitmap(mapa,0,0,0);
-            al_draw_bitmap(pacman,posx,posy,0);
+            
+			al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
 
 
@@ -700,11 +790,12 @@ int main(int argc, char **argv)
                         al_draw_bitmap(bolas,l*20,k*20,0);
                 }
             }
-
+			al_draw_bitmap(pacman,posx,posy,0);
             al_draw_bitmap(ghostAmarelo,amareloX,amareloY,0);
             al_draw_bitmap(blinky,bX,bY,0);
             al_draw_bitmap(ghostVerde,verdeX,verdeY,0);
             al_draw_bitmap(azul, azulX,azulY,0);
+			
 
             randomMove(MAPA,aX,aY,amareloX,amareloY,1);
             blinkyMove(MAPA,g,h,bX,bY);
