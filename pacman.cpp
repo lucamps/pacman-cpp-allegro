@@ -127,11 +127,11 @@ int uly=h;
 //Auxiliares para controlar abrir e fechar da boca do pacman
 int lastmouth, sim=0;
 
-bool key[4] = {false, false, false, false} ;
+bool key[4] = {false, false, false, false};
 bool redraw = true;
 bool sair = false;
 
-void blinkyMove(char M[][24], int i, int j, int &x, int &y, int &bX, int &bY) {
+void blinkyMove(char M[][24],int &x, int &y, int &bX, int &bY) {
 
                 //Desce uma linha se o pacman esta embaixo
                 //Se a zona for fechada, talvez essa parte nao seja necessaria
@@ -205,7 +205,7 @@ void blinkyMove(char M[][24], int i, int j, int &x, int &y, int &bX, int &bY) {
 
 }
 
-void semiSmart(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY, int &lastThisPos) {
+void semiSmart(char M[][24],int &x, int &y, int &gposX, int &gposY, int &lastThisPos) {
 
     // Lembrar que aqui o eixo X e controlado pelas colunas (y) e o Y pelas linhas (x)
     // Para nao alterarmos o valor de x e y nas condicionais, pois sao recebidos por referencia
@@ -259,22 +259,22 @@ void semiSmart(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gpos
 
 }
 
-void randomMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY, int phantom){
+void randomMove(char M[][24],int &x, int &y, int &gposX, int &gposY, int phantom){
 
     int auxX = x;
     int auxY = y;
 
-    srand(time(0));
+    srand(time(NULL));
     randomIndex= rand()%4;
 
     // Para que os fantasmas não escolham fazer o mesmo movimento "aleatorio", sorteia-se outro
     // numero com base no horário do sistema.
     if(phantom == 1)
-        srand(time(0));
+        srand(time(NULL));
     randomIndex = rand()%4;
 
     if(phantom == 2)
-        srand(time(0));
+        srand(time(NULL));
     randomIndex = rand()%4;
 
 
@@ -323,14 +323,8 @@ void randomMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gpo
         gposX = y*q;
     }
 
-    //else
-        //stuck = true;
-
-    // Se estiver preso, ficar um pouco mais inteligente temporariamente.
-    //if(stuck) {
     else
-        semiSmart(M,i,j,x,y,gposX,gposY, randomIndex);
-
+        semiSmart(M,x,y,gposX,gposY, randomIndex);
 
 }
 
@@ -712,10 +706,10 @@ int main(int argc, char **argv)
             al_draw_bitmap(ghostVerde,verdeX,verdeY,0);
             al_draw_bitmap(azul, azulX,azulY,0);
 
-            randomMove(MAPA,i,j,aX,aY,amareloX,amareloY,1);
-            blinkyMove(MAPA,i,j,g,h,bX,bY);
-            randomMove(MAPA,i,j,vX,vY,verdeX,verdeY,2);
-            randomMove(MAPA,i,j,r,t,azulX,azulY,0);
+            randomMove(MAPA,aX,aY,amareloX,amareloY,1);
+            blinkyMove(MAPA,g,h,bX,bY);
+            randomMove(MAPA,vX,vY,verdeX,verdeY,2);
+            randomMove(MAPA,r,t,azulX,azulY,0);
 
             al_flip_display();
 
