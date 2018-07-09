@@ -4,12 +4,12 @@
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
-#include <iostream>
 #include <cstdio>
-#include <time.h>
+#include <cmath>
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <cmath>
+#include <time.h>
 
 using namespace std;
 
@@ -17,14 +17,16 @@ const float FPS = 6.8;
 const int SCREEN_W = 460;
 const int SCREEN_H = 550;
 
-struct Info{   //struct usado para manipular as informacoes da IA do Blinky
+// Struct usado para manipular as informacoes da IA do Blinky
+struct Info{
     double dist;
     int x;
     int y;
     char seta;
 };
 
-double distancia(int x1,int y1,int x2,int y2){ //funcao usada para a IA do Blinky
+// Funcao usada para a IA do Blinky
+double distancia(int x1,int y1,int x2,int y2){
 
     return abs(sqrt((x2 - x1)*(x2 - x1) +  (y2 - y1)*(y2 - y1)));
 
@@ -36,7 +38,7 @@ enum MYKEYS
 };
 
 
-// Matriz definindo mapa do jogo: 2 representa bolas, 1 representa paredes, 0 representa corredor
+// Matriz definindo mapa do jogo: 2 representa bolas, 1 paredes e 0 corredor
 char MAPA[24][24] =
 {
     "11111111111111111111111",
@@ -48,7 +50,7 @@ char MAPA[24][24] =
     "12222212222122221222221",
     "11111211110101111211111",
     "11111210000000001211111",
-    "11111210111111101211111",
+    "11111210111011101211111",
     "00000000111011100000000",
     "11111210111011101211111",
     "11111210111111101211111",
@@ -63,9 +65,10 @@ char MAPA[24][24] =
     "12222222222222222222221",
     "11111111111111111111111",
 };
-int ultimoRandom=0;
 
-int bola=183; //numero de bolinhas no mapa
+// Numero de bolinhas no mapa
+int bola=183;
+int k=0,l=0; //Auxiliar para controlar posicionamento das bolas
 
 ALLEGRO_DISPLAY *display = NULL;
 ALLEGRO_EVENT_QUEUE *event_queue = NULL;
@@ -78,7 +81,7 @@ ALLEGRO_BITMAP *pac_left   = NULL;
 ALLEGRO_BITMAP *pac_down   = NULL;
 ALLEGRO_BITMAP *pac_right   = NULL;
 ALLEGRO_BITMAP *shutup   = NULL;
-ALLEGRO_BITMAP *aux   = NULL;   //p abrir e fechar boca pacman
+ALLEGRO_BITMAP *aux   = NULL;   //Para abrir e fechar boca pacman
 ALLEGRO_BITMAP *blinky   = NULL;
 ALLEGRO_BITMAP *ghostAmarelo = NULL;
 ALLEGRO_BITMAP *ghostVerde = NULL;
@@ -89,44 +92,50 @@ ALLEGRO_FONT *fonte = NULL;
 
 int i = 17, j = 11; //Posicao do PacMan
 int g = 1, h = 1; // Posicao do Blinky
-int r = 1, t = 22; // Posicao do Azul
+int r = 21, t = 1; // Posicao do Azul
 int aX = 1, aY = 21; // Posicao do fantasma Amarelo
-int vX = 7, vY = 11; // Posicao do fantasma Verde
-
-int k = 0, l = 0;  //variaveis usadas para aparicao das bolas
+int vX = 21, vY = 21; // Posicao do fantasma Verde
 int q = 20; //tamanho de cada celula no mapa
 
-// Variveis de posicao dos fantasmas e do pacman
+// Variveis de posicao do pacman na tela
 int posy = i*q;
 int posx = j*q;
-int bY = g*q; // Posições do Blinky
+// Posições do Blinky
+int bY = g*q;
 int bX = h*q;
-int azulX = t*q; //Posicoes do Azul
+//Posicoes do Azul
+int azulX = t*q;
 int azulY = r*q;
-int amareloX = aX * q;
-int amareloY = aY * q;
-int verdeX = vX *q;
-int verdeY = vY *q;
-int randomIndex = -1;
-int lastPos = -1;
-int lastSmartPos = -1;
+//Posicoes do Amarelo
+int amareloX = aY * q;
+int amareloY = aX * q;
+//Posicoes do Verde
+int verdeX = vY *q;
+int verdeY = vX *q;
+
+//Auxiliares de "memoria" dos personagens, indicam o ultimo movimento realizado
+int lastRandomPos = -1;
 int lastAmareloPos = -1;
 int lastAzulPos = -1;
 int lastVerdePos = -1;
-bool stuck = true; // Guarda a ultima decisao do fantasma burro
+int randomIndex = -1;
 
-
-int ulx=g;  //ultimas posicoes, usado pro Blinky
+//Ultimas posicoes, usado pro Blinky
+int ulx=g;
 int uly=h;
+
+//Auxiliares para controlar abrir e fechar da boca do pacman
+int lastmouth, sim=0;
 
 bool key[4] = {false, false, false, false} ;
 bool redraw = true;
 bool sair = false;
 
-
-int c;
 void blinkyMove(char M[][24], int i, int j, int &x, int &y, int &bX, int &bY) {
+
                 //Desce uma linha se o pacman esta embaixo
+                //Se a zona for fechada, talvez essa parte nao seja necessaria
+
 				if((x==8) && (y==11) && (j<=y)) { //ifs para o blinky nao entrar na zona de nascimento
 					ulx=x;
 					uly=y;
@@ -148,15 +157,13 @@ void blinkyMove(char M[][24], int i, int j, int &x, int &y, int &bX, int &bY) {
 
                 double less=1000;
                 int which=1000;
-                for(c=0;c<4;c++){  //vendo qual distancia é menor e ao mesmo tempo acessivel
+                for(int c=0;c<4;c++){  //vendo qual distancia é menor e ao mesmo tempo acessivel
                         if((vai[c].dist<less) && (M[vai[c].x][vai[c].y]!='1')){
                             if((vai[c].x!=ulx) || (vai[c].y!=uly)){
                               less=vai[c].dist;
                               which=c;
                             }
                         }
-
-
                 }
 				ulx=x;
 				uly=y;
@@ -201,15 +208,14 @@ void blinkyMove(char M[][24], int i, int j, int &x, int &y, int &bX, int &bY) {
 void semiSmart(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY, int &lastThisPos) {
 
     // Lembrar que aqui o eixo X e controlado pelas colunas (y) e o Y pelas linhas (x)
-
-    // Para nao alterarmos o valor de x e y nas condicionais
+    // Para nao alterarmos o valor de x e y nas condicionais, pois sao recebidos por referencia
     int auxX = x;
     int auxY = y;
 
-                //Desce uma linha se o pacman esta embaixo
 
+                //Desce uma linha se o pacman esta embaixo
                 if(i > x && M[auxX+1][y] != '1') {
-                    if(lastThisPos == 0) return; // Se a ultima
+                    if(lastThisPos == 0) return; // Se o ultimo movimento foi o contrário do atual, nao fazer nada
                     lastThisPos = 1;
                     x++;
                     gposY = x*q;
@@ -255,19 +261,21 @@ void semiSmart(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gpos
 
 void randomMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gposY, int phantom){
 
-    int auxX = x; // Necessarios pois x e y sao recebidos por referencia
+    int auxX = x;
     int auxY = y;
 
     srand(time(0));
     randomIndex= rand()%4;
 
-    if(phantom == 1) srand(time(0));
+    // Para que os fantasmas não escolham fazer o mesmo movimento "aleatorio", sorteia-se outro
+    // numero com base no horário do sistema.
+    if(phantom == 1)
+        srand(time(0));
     randomIndex = rand()%4;
 
     if(phantom == 2)
-    srand(time(0));
+        srand(time(0));
     randomIndex = rand()%4;
-
 
 
     // Teleporte
@@ -276,7 +284,6 @@ void randomMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gpo
         y = 22;
         gposX = y*q;
         gposY = x*q;
-        printf("Entrei no portal da esquerda\n");
         return;
     }
 
@@ -285,55 +292,44 @@ void randomMove(char M[][24], int i, int j, int &x, int &y, int &gposX, int &gpo
         y = 0;
         gposX = y*q;
         gposY = x*q;
-        printf("Entrei no portal da direita\n");
         return;
     }
 
     if(randomIndex == 0 && M[auxX-1][y] != '1'){
-        if(lastPos == 1) return;
-        lastPos = 0;
+        if(lastRandomPos == 1) return;
+        lastRandomPos = 0;
         x--;
         gposY = x*q;
-        stuck = false;
-
-
     }
 
     else if(randomIndex == 1 && M[auxX+1][y] != '1'){
-        if(lastPos == 0) return;
-        lastPos = 1;
+        if(lastRandomPos == 0) return;
+        lastRandomPos = 1;
         x++;
         gposY = x*q;
-        stuck = false;
     }
 
     else if(randomIndex == 2 && M[x][auxY+1] != '1'){
-        if(lastPos == 3) return;
-        lastPos = 2;
+        if(lastRandomPos == 3) return;
+        lastRandomPos = 2;
         y++;
         gposX = y*q;
-        stuck = false;
-
     }
 
     else if(randomIndex == 3 && M[x][auxY-1] != '1'){
-        if(lastPos == 2) return;
-        lastPos = 3;
+        if(lastRandomPos == 2) return;
+        lastRandomPos = 3;
         y--;
         gposX = y*q;
-        stuck = false;
     }
 
-    else {
-        stuck = true;
-    }
+    //else
+        //stuck = true;
 
-    // Se estiver preso, sortear outra posicao
-    if(stuck) {
-        //srand(time(NULL));
+    // Se estiver preso, ficar um pouco mais inteligente temporariamente.
+    //if(stuck) {
+    else
         semiSmart(M,i,j,x,y,gposX,gposY, randomIndex);
-        stuck = false;
-    }
 
 
 }
@@ -436,7 +432,6 @@ int inicializa() {
 
         return 0;
     }
-
     al_draw_bitmap(blinky,bX,bY,0);
 
     if(!azul)
@@ -446,7 +441,6 @@ int inicializa() {
 
         return 0;
     }
-
     al_draw_bitmap(azul,azulX,azulY,0);
 
     if(!ghostAmarelo)
@@ -456,7 +450,6 @@ int inicializa() {
 
         return 0;
     }
-
     al_draw_bitmap(ghostAmarelo,amareloX,amareloY,0);
 
     if(!ghostVerde)
@@ -466,42 +459,38 @@ int inicializa() {
 
         return 0;
     }
-
-    al_draw_bitmap(ghostAmarelo,amareloX,amareloY,0);
+    al_draw_bitmap(ghostVerde,verdeX,verdeY,0);
 
 
     bolas = al_load_bitmap("bolas.png");
-
     if(!bolas)
     {
         cout << "Falha ao carregar as bolas!" << endl;
         al_destroy_display(display);
         return 0;
     }
-
     al_draw_bitmap(bolas,k*20,l*20,0);
 
     al_init_font_addon();
     al_init_ttf_addon();
 
-    // Inicializaï¿½ï¿½o das fontes
+    // Inicializacao das fontes
     if (!al_init_ttf_addon())
     {
         cout<< "Falha ao inicializar add-on allegro_ttf."<<endl;;
         return -1;
     }
-      // Carregando o arquivo de fonte
+
        // Carregando o arquivo de fonte tanto para Ubuntu como para Windows
       fonte = al_load_font("/usr/share/fonts/truetype/lato/Lato-Black.ttf", 28, 0);
       if (!fonte)
     {
         fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
-       // return -1;
     }
-        if (!fonte)
+      if (!fonte)
     {
         al_destroy_display(display);
-       cout<< "Falha ao carregar fonte."<<endl;
+        cout<< "Falha ao carregar fonte."<<endl;
         return -1;
     }
 
@@ -523,8 +512,6 @@ int inicializa() {
 
     return 1;
 }
-	 int lastmouth, sim=0;//duas variaveis que serao usadas p/ abrir e fechar a boca do pac
-
 int main(int argc, char **argv)
 {
     int pontos=0;
@@ -538,85 +525,73 @@ int main(int argc, char **argv)
 
         if(ev.type == ALLEGRO_EVENT_TIMER){
 
-
         /*Movimentacao do pac man*/
 
         // Se chegar na borda do mapa, teleportar para outra
             if(key[KEY_RIGHT] && i == 10 && j == 22){
-
                 i = 10;
                 j = -1;
                 posx = j*q;
                 posy = i*q;
             }
 
-
              if(key[KEY_LEFT] && i == 10 && j == -1){
-
                 i = 10;
                 j = 23;
                 posx = j*q;
                 posy = i*q;
             }
 
+            if(key[KEY_UP] && MAPA[i-1][j] != '1'){
 
-            if(key[KEY_UP] && MAPA[i-1][j] != '1')
-            {
-
-
-               pacman = pac_up;
-				lastmouth=2;
-
+                pacman = pac_up;
+                lastmouth=2;
                 i--;
                 posy = i*q;
 
-                if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
+                //Se passa pela bola, a bola some
+                if(MAPA[i][j] == '2'){
                     MAPA[i][j] = '0';
-                    bola--; //subtrai no numero de bolinhas
+                    bola--;
                     pontos++;
                 }
             }
 
-            if(key[KEY_DOWN] && MAPA[i+1][j] != '1')
-            {
+            if(key[KEY_DOWN] && MAPA[i+1][j] != '1'){
 
+				pacman=pac_down;
 				lastmouth=0;
-                pacman=pac_down;
                 i++;
                 posy = i*q;
 
-                if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
+                if(MAPA[i][j] == '2'){
                     MAPA[i][j] = '0';
                     bola--;
                     pontos++;
                 }
             }
 
-            if(key[KEY_LEFT] && MAPA[i][j-1] != '1')
-            {
+            if(key[KEY_LEFT] && MAPA[i][j-1] != '1'){
 
-				lastmouth=1;
                 pacman=pac_left;
+				lastmouth=1;
                 j--;
                 posx = j*q;
 
-
-                if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
+                if(MAPA[i][j] == '2'){
                     MAPA[i][j] = '0';
                     bola--;
                     pontos++;
                 }
             }
 
-            if(key[KEY_RIGHT] && MAPA[i][j+1] != '1')
-            {
+            if(key[KEY_RIGHT] && MAPA[i][j+1] != '1'){
+                pacman=pac_right;
 				lastmouth=3;
                 j++;
-                pacman=pac_right;
                 posx = j*q;
 
-
-                if(MAPA[i][j] == '2'){   //se passa pela bola, a bola some
+                if(MAPA[i][j] == '2'){
                     MAPA[i][j] = '0';
                     bola--;
                     pontos++;
@@ -624,36 +599,38 @@ int main(int argc, char **argv)
             }
 
 
+        // Controle do abrir e fechar da boca do pacman
         if(sim%2==0){
-				aux = pacman;
-           		pacman=shutup;  //se a variavel sim ï¿½ par, redraw o pacman com boca fechada
-				redraw = true;
-			}else{
-				pacman=aux;
-				redraw = true; //se nao, da redraw nele normal
-                switch(lastmouth){ //switch para redesenhar ultima posica do pacman apos fechar boca
-                    case 0:
-                        pacman=pac_down; break;
-                    case 1:
-                        pacman=pac_left;  break;
-                    case 2:
-                         pacman=pac_up;  break;
-                    case 3:
-                        pacman=pac_right;  break;
+            aux = pacman;
+            pacman=shutup;  //Se a variavel sim for par, redraw o pacman com boca fechada
+            redraw = true;
+        }
+        else{
+            pacman=aux;
+            redraw = true; //Se nao, da redraw nele normal
+
+            //Switch para redesenhar ultima posica do pacman apos fechar boca
+            switch(lastmouth){
+                case 0:
+                    pacman=pac_down; break;
+                case 1:
+                    pacman=pac_left;  break;
+                case 2:
+                    pacman=pac_up;  break;
+                case 3:
+                    pacman=pac_right;  break;
                 }
 			}
-			sim++;
 
-
+        sim++;
         }
+
         else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
-        {
             break;
-        }
-        else if(ev.type == ALLEGRO_EVENT_KEY_DOWN)
-        {
-            switch(ev.keyboard.keycode)
-            {
+
+        else if(ev.type == ALLEGRO_EVENT_KEY_DOWN){
+
+            switch(ev.keyboard.keycode){
             case ALLEGRO_KEY_UP:
                 key[KEY_UP] = false;
                 break;
@@ -671,41 +648,35 @@ int main(int argc, char **argv)
                 break;
             }
         }
-        else if(ev.type == ALLEGRO_EVENT_KEY_UP)
-        {
+
+        else if(ev.type == ALLEGRO_EVENT_KEY_UP){
+
+                key[KEY_UP] = false;
+                key[KEY_DOWN] = false;
+                key[KEY_LEFT] = false;
+                key[KEY_RIGHT] = false;
 
             switch(ev.keyboard.keycode)
             {
             case ALLEGRO_KEY_UP:
+
                 key[KEY_UP] = true;
-                key[KEY_DOWN] = false; //codigo para o pacman andar ate pressionar outra tecla
-                key[KEY_LEFT] = false;  //analogo para as teclas de baixo
-                key[KEY_RIGHT] = false;
                 break;
 
             case ALLEGRO_KEY_DOWN:
-                key[KEY_UP] = false;
+
                 key[KEY_DOWN] = true;
-                key[KEY_LEFT] = false;
-                key[KEY_RIGHT] = false;
                 break;
 
             case ALLEGRO_KEY_LEFT:
-                key[KEY_UP] = false;
-                key[KEY_DOWN] = false;
+
                 key[KEY_LEFT] = true;
-                key[KEY_RIGHT] = false;
                 break;
 
             case ALLEGRO_KEY_RIGHT:
-                key[KEY_UP] = false;
-                key[KEY_DOWN] = false;
-                key[KEY_LEFT] = false;
+
                 key[KEY_RIGHT] = true;
                 break;
-
-            // MOVIMENTACAO DO FANTASMA
-
 
             case ALLEGRO_KEY_ESCAPE:
                 sair = true;
@@ -713,20 +684,17 @@ int main(int argc, char **argv)
             }
         }
 
-         al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
+        al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
-        if(redraw && al_is_event_queue_empty(event_queue))
-        {
+        if(redraw && al_is_event_queue_empty(event_queue)){
 
             redraw = false;
 
+            al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
             al_clear_to_color(al_map_rgb(0,0,0));
 
             al_draw_bitmap(mapa,0,0,0);
             al_draw_bitmap(pacman,posx,posy,0);
-
-            al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
-            blinkyMove(MAPA,i,j,g,h,bX,bY);
 
 
 
@@ -743,20 +711,21 @@ int main(int argc, char **argv)
             al_draw_bitmap(blinky,bX,bY,0);
             al_draw_bitmap(ghostVerde,verdeX,verdeY,0);
             al_draw_bitmap(azul, azulX,azulY,0);
-            randomMove(MAPA,i,j,r,t,azulX,azulY,0);
-            randomMove(MAPA,i,j,aX,aY,amareloX,amareloY,1);
-            randomMove(MAPA,i,j,vX,vY,verdeX,verdeY,2);
 
+            randomMove(MAPA,i,j,aX,aY,amareloX,amareloY,1);
+            blinkyMove(MAPA,i,j,g,h,bX,bY);
+            randomMove(MAPA,i,j,vX,vY,verdeX,verdeY,2);
+            randomMove(MAPA,i,j,r,t,azulX,azulY,0);
 
             al_flip_display();
 
-
         }
+
 		if(bola==0){
-                al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                al_rest(4.8);
-                return 0;
-            }
+            al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+            al_rest(4.8);
+            return 0;
+        }
     }
 
     al_destroy_bitmap(mapa);
@@ -770,5 +739,6 @@ int main(int argc, char **argv)
     al_destroy_bitmap(blinky);
     al_destroy_bitmap(azul);
     al_destroy_bitmap(ghostAmarelo);
+    al_destroy_bitmap(ghostVerde);
     return 0;
 }
