@@ -24,7 +24,7 @@ struct Info{
     int y;
     char seta;
 };
-
+bool comecou=true; //bool usado para tocar a musica do inicio do jogo
 // Funcao usada para a IA do Blinky
 double distancia(int x1,int y1,int x2,int y2){
 
@@ -32,10 +32,10 @@ double distancia(int x1,int y1,int x2,int y2){
 
 }
 
-//Variaveis para a movimentação do PacMan
+//Variaveis para a movimentaï¿½ï¿½o do PacMan
 //1= esquerda, 2=baixo, 3=direita, 4=cima.
-int intencao = 0;	//intençao de movimento atual
-int anterior = 0;	//intenção anterior de movimento
+int intencao = 0;	//intenï¿½ao de movimento atual
+int anterior = 0;	//intenï¿½ï¿½o anterior de movimento
 
 enum MYKEYS{
     KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT
@@ -92,6 +92,7 @@ ALLEGRO_BITMAP *ghostVerde = NULL;
 ALLEGRO_BITMAP *azul = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_SAMPLE *win = NULL;
+ALLEGRO_SAMPLE *death = NULL;
 ALLEGRO_FONT *fonte = NULL;
 
 int i = 17, j = 11; //Posicao do PacMan
@@ -104,7 +105,7 @@ int q = 20; //tamanho de cada celula no mapa
 // Variveis de posicao do pacman na tela
 int posy = i*q;
 int posx = j*q;
-// Posições do Blinky
+// Posiï¿½ï¿½es do Blinky
 int bY = g*q;
 int bX = h*q;
 //Posicoes do Azul
@@ -161,7 +162,7 @@ void blinkyMove(char M[][24],int &x, int &y, int &bX, int &bY) {
 
                 double less=1000;
                 int which=1000;
-                for(int c=0;c<4;c++){  //vendo qual distancia é menor e ao mesmo tempo acessivel
+                for(int c=0;c<4;c++){  //vendo qual distancia ï¿½ menor e ao mesmo tempo acessivel
                         if((vai[c].dist<less) && (M[vai[c].x][vai[c].y]!='1')){
                             if((vai[c].x!=ulx) || (vai[c].y!=uly)){
                               less=vai[c].dist;
@@ -219,7 +220,7 @@ void semiSmart(char M[][24],int &x, int &y, int &gposX, int &gposY, int &lastThi
 
                 //Desce uma linha se o pacman esta embaixo
                 if(i > x && M[auxX+1][y] != '1') {
-                    if(lastThisPos == 0) return; // Se o ultimo movimento foi o contrário do atual, nao fazer nada
+                    if(lastThisPos == 0) return; // Se o ultimo movimento foi o contrï¿½rio do atual, nao fazer nada
                     lastThisPos = 1;
                     x++;
                     gposY = x*q;
@@ -271,8 +272,8 @@ void randomMove(char M[][24],int &x, int &y, int &gposX, int &gposY, int phantom
     srand(time(NULL));
     randomIndex= rand()%4;
 
-    // Para que os fantasmas não escolham fazer o mesmo movimento "aleatorio", sorteia-se outro
-    // numero com base no horário do sistema.
+    // Para que os fantasmas nï¿½o escolham fazer o mesmo movimento "aleatorio", sorteia-se outro
+    // numero com base no horï¿½rio do sistema.
     if(phantom == 1)
         srand(time(NULL));
     randomIndex = rand()%4;
@@ -366,11 +367,16 @@ int inicializa() {
       return -1;
    }
     win = al_load_sample("beggining.wav" );
+    death = al_load_sample("death.wav" );
     if(!win){
-        printf("Audio clip sample not loaded! \n");
+        printf("Winning audio clip sample not loaded! \n");
         return -1;
     }
-
+    if(!death){
+        printf("Death clip sample not loaded! \n");
+        return -1;
+    }
+    
     sample = al_load_sample("suspense.wav" ); //musica que sera carregada
 
    if (!sample){
@@ -480,7 +486,7 @@ int inicializa() {
     }
 
        // Carregando o arquivo de fonte tanto para Ubuntu como para Windows
-      fonte = al_load_font("/usr/share/fonts/truetype/lato/Lato-Black.ttf", 28, 0);
+      fonte = al_load_font("/usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf", 28, 0);
       if (!fonte)
     {
         fonte = al_load_font("C:/Windows/Fonts/OCRAEXT.ttf", 28, 0);
@@ -524,7 +530,7 @@ int main(int argc, char **argv)
         if(ev.type == ALLEGRO_EVENT_TIMER){
 
         /*Movimentacao do pac man*/
-
+       
         // Se chegar na borda do mapa, teleportar para outra
 			if(intencao==3 && i == 10 && j == 22){
                 i = 10;
@@ -765,7 +771,6 @@ int main(int argc, char **argv)
 			} 
         }
 		
-        
 
         al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
@@ -802,14 +807,26 @@ int main(int argc, char **argv)
             randomMove(MAPA,vX,vY,verdeX,verdeY,2);
             randomMove(MAPA,r,t,azulX,azulY,0);
 
+            
             al_flip_display();
 
         }
 
+
 		if(bola==0){
+            
             al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
             al_rest(4.8);
             return 0;
+        }
+                    //Codigo para o pacman morrer quando encostar em um dos fantasmas
+        if( (g==i && h==j) || (i==r && j==t) || (i==aX && j==aY) || (i==vX && j==vY)){
+
+            al_destroy_sample(sample);
+            al_play_sample(death, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+            al_rest(2.8);
+            return 0;
+
         }
     }
 
