@@ -23,7 +23,7 @@ struct Info{
     int y;
     char seta;
 };
-bool comecou=true; //bool usado para tocar a musica do inicio do jogo
+bool sominicial=true; //bool usado para tocar a musica do inicio do jogo
 // Funcao usada para a IA do Blinky
 double distancia(int x1,int y1,int x2,int y2){
 
@@ -92,6 +92,7 @@ ALLEGRO_BITMAP *azul = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_SAMPLE *win = NULL;
 ALLEGRO_SAMPLE *death = NULL;
+ALLEGRO_SAMPLE *omaewa = NULL;
 ALLEGRO_FONT *fonte = NULL;
 
 int i = 17, j = 11; //Posicao do PacMan
@@ -125,8 +126,7 @@ int lastVerdePos = -1;
 int randomIndex = -1;
 
 //Ultimas posicoes, usado pro Blinky
-int ulx=g;
-int uly=h;
+
 
 //Auxiliares para controlar abrir e fechar da boca do pacman
 int lastmouth, sim=0;
@@ -134,6 +134,13 @@ int lastmouth, sim=0;
 //bool key[4] = {false, false, false, false};
 bool redraw = true;
 bool sair = false;
+
+int ulx=g; //Ultimas coordenadas do Blinky, usado pra morte do PacMan e para a movimentacao dele mesmo
+int uly=h;
+
+//Ultimas coordenadas de 3 fantasmas e do PacMan (para realizar a morte do PacMan)
+int lastamarelox=aX , lastamareloy=aY, lastazulx=r, lastazuly=t, lastverdex=vX, lastverdey=vY;
+int lastpacmanx = i, lastpacmany = j, lastvermelhox=g, lastvermelhoy=h;
 
 void blinkyMove(char M[][24],int &x, int &y, int &bX, int &bY) {
 
@@ -331,7 +338,7 @@ void randomMove(char M[][24],int &x, int &y, int &gposX, int &gposY, int phantom
         semiSmart(M,x,y,gposX,gposY, randomIndex);
 
 }
-
+bool comecou;
 
 int inicializa() {
     if(!al_init())
@@ -366,13 +373,19 @@ int inicializa() {
       return -1;
    }
     win = al_load_sample("beggining.wav" );
-    death = al_load_sample("death.wav" );
+    death = al_load_sample("nani.wav" );
+
+    omaewa = al_load_sample("omaewa.wav" );
     if(!win){
         printf("Winning audio clip sample not loaded! \n");
         return -1;
     }
     if(!death){
         printf("Death clip sample not loaded! \n");
+        return -1;
+    }
+    if(!omaewa){
+        printf("Omaewa clip sample not loaded! \n");
         return -1;
     }
     
@@ -382,6 +395,7 @@ int inicializa() {
       printf( "Audio clip sample not loaded!\n" );
       return -1;
    }
+
     al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
 
     if(!al_init_image_addon())
@@ -524,10 +538,15 @@ int main(int argc, char **argv)
     {
         ALLEGRO_EVENT ev;
         al_wait_for_event(event_queue, &ev);
-
+        
 
         if(ev.type == ALLEGRO_EVENT_TIMER){
 
+
+        if (sominicial){
+            al_play_sample(omaewa, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+            sominicial=false;
+        }
         /*Movimentacao do pac man*/
        
         // Se chegar na borda do mapa, teleportar para outra
@@ -813,7 +832,7 @@ int main(int argc, char **argv)
             al_rest(4.8);
             return 0;
         }
-                    //Codigo para o pacman morrer quando encostar em um dos fantasmas
+         //Codigo para o pacman morrer quando ocupar a mesma posição que um fantasma
         if( (g==i && h==j) || (i==r && j==t) || (i==aX && j==aY) || (i==vX && j==vY)){
 
             al_destroy_sample(sample);
@@ -821,7 +840,24 @@ int main(int argc, char **argv)
             al_rest(2.8);
             return 0;
 
-        }
+                //Codigo para o pacman morrer quando ele e algum fantasma trocarem de posições
+        }else if ((lastpacmanx==g && lastpacmany==h && i==ulx && j==uly) || 
+                  (lastpacmanx==r && lastpacmany==t && i==lastazulx && j==lastazuly) ||
+                  (lastpacmanx==aX && lastpacmany==aY && i==lastamarelox && j==lastamareloy) ||
+                  (lastpacmanx==vX && lastpacmany==vY && i==lastverdex && j==lastverdey) ){
+                    
+                    al_destroy_sample(sample);
+                    al_play_sample(death, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                    al_rest(2.8);
+                    return 0;
+                  }
+    
+        //armazena as ultimas posicoes dos fantasmas e do pacman
+        lastpacmanx=i; lastpacmany=j;
+        lastvermelhox=g; lastvermelhoy=h;
+        lastamarelox=aX; lastamareloy=aY;
+        lastverdex=vX; lastverdey=vY;
+        lastazulx=r; lastazuly=t;
     }
 
     al_destroy_bitmap(mapa);
