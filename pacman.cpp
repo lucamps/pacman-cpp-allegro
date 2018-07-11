@@ -70,7 +70,7 @@ char MAPA[24][24] =
 };
 
 // Numero de bolinhas no mapa
-int bola=183;
+int bola=184;
 int k=0,l=0; //Auxiliar para controlar posicionamento das bolas
 
 ALLEGRO_DISPLAY *display = NULL;
