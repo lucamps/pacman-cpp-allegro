@@ -12,10 +12,9 @@
 #include <time.h>
 
 using namespace std;
-
 const float FPS = 6.8;
-const int SCREEN_W = 460;
-const int SCREEN_H = 550;
+const int SCREEN_W = 460; 
+const int SCREEN_H = 550;   
 
 // Struct usado para manipular as informacoes da IA do Blinky
 struct Info{
@@ -59,7 +58,7 @@ char MAPA[24][24] =
     "11111210111011101211111",
     "11111210111111101211111",
     "11111210000000001211111",
-    "11111210111111101011111",
+    "11111210111111101211111",
     "12222222222122222222221",
     "12111211112121111211121",
     "12221222222022222212221",
@@ -532,21 +531,24 @@ int main(int argc, char **argv)
         /*Movimentacao do pac man*/
        
         // Se chegar na borda do mapa, teleportar para outra
-			if(intencao==3 && i == 10 && j == 22){
+			if(intencao!=1 && j >= 22){
                 i = 10;
-                j = -1;
+				j = 0;
                 posx = j*q;
                 posy = i*q;
+				
             }
 
-             if(intencao==1 && i == 10 && j == -1){
+            else if(intencao!=3 && j <= -1){
                 i = 10;
-                j = 23;
+                j = 22;
                 posx = j*q;
                 posy = i*q;
+				
             }
 		//fim do teleporte//
-
+	
+		//movimentacao baseada no jogo original
 		if(intencao==4){
 			if(MAPA[i-1][j] != '1'){
 				pacman=pac_up;
@@ -630,26 +632,23 @@ int main(int argc, char **argv)
 					anterior=1;
 				}
 				else{
-					if(anterior==2 && MAPA[i+1][j] != '1'){
-					
-						lastmouth=0;
-						pacman=pac_down;
-						i++;
-						posy = i*q;
-					
+						if(anterior==2 && MAPA[i+1][j] != '1'){
+							lastmouth=0;
+							pacman=pac_down;
+							i++;
+							posy = i*q;
+						}
+						if(anterior==4 && MAPA[i-1][j] != '1'){
 						
-					}
-					if(anterior==4 && MAPA[i-1][j] != '1'){
-					
-						lastmouth=2;
-						pacman=pac_up;
-						i--;
-						posy = i*q;
-					
+							lastmouth=2;
+							pacman=pac_up;
+							i--;
+							posy = i*q;
 						
-						
-					}
-					
+							
+							
+						}
+				
 				}
 				if(MAPA[i][j] == '2'){
                     MAPA[i][j] = '0';
@@ -669,23 +668,19 @@ int main(int argc, char **argv)
 					anterior=3;
 				}
 				else{
-					if(anterior==2 && MAPA[i+1][j] != '1'){
-						lastmouth=0;
-						pacman=pac_down;
-						i++;
-						posy = i*q;
-						
-						
-					}
-					if(anterior==4 && MAPA[i-1][j] != '1'){
-						
-						lastmouth=2;
-						pacman=pac_up;
-						i--;
-						posy = i*q;
-						
-						
-					}
+					
+						if(anterior==2 && MAPA[i+1][j] != '1'){
+							lastmouth=0;
+							pacman=pac_down;
+							i++;
+							posy = i*q;
+						}
+						if(anterior==4 && MAPA[i-1][j] != '1'){
+							lastmouth=2;
+							pacman=pac_up;
+							i--;
+							posy = i*q;
+						}
 					
 				}
 				if(MAPA[i][j] == '2'){
@@ -694,7 +689,6 @@ int main(int argc, char **argv)
                     pontos++;
                 }
 			}
-			
 
 
 
@@ -787,8 +781,8 @@ int main(int argc, char **argv)
 
 
 
-			for(k=0; k <26; k++){
-                for (l=0; l<26; l++){
+			for(k=0; k <24; k++){
+                for (l=0; l<24; l++){
 					if(bola == 0)
 						continue;
                     else if(MAPA[k][l] == '2')
