@@ -77,6 +77,7 @@ ALLEGRO_DISPLAY *display = NULL;
 ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 ALLEGRO_TIMER *timer = NULL;
 ALLEGRO_BITMAP *mapa   = NULL;
+ALLEGRO_BITMAP *mapa2  = NULL;
 ALLEGRO_BITMAP *perdeu = NULL;
 ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_BITMAP *pacman   = NULL;
@@ -105,7 +106,7 @@ int q = 20; //tamanho de cada celula no mapa
 
 bool gameover = false; 
 bool playwaka = false;
-
+bool acabar = false;
 // Variveis de posicao do pacman na tela
 int posy = i*q;
 int posx = j*q;
@@ -426,10 +427,19 @@ int inicializa() {
     }
     al_draw_bitmap(mapa,0,0,0);
 	
-	perdeu = al_load_bitmap("wasted.png");
+	
+	mapa2 = al_load_bitmap("map2.bmp");
+    if(!mapa2)
+    {
+        cout << "Falha ao carregar o mapa 2!" << endl;
+        al_destroy_display(display);
+        return 0;
+    }
+	
+	perdeu = al_load_bitmap("mapmorte.bmp");
     if(!perdeu)
     {
-        cout << "Falha ao carregar a imagem wasted.png!" << endl;
+        cout << "Falha ao carregar a imagem mapmorte.bmp!" << endl;
         al_destroy_display(display);
         return 0;
     }
@@ -815,8 +825,18 @@ int main(int argc, char **argv)
 			
 			if(!gameover)
 				al_draw_bitmap(mapa,0,0,0);
-			else
+			else{			//troca o mapa se perdeu
+				al_draw_bitmap(mapa2,0,0,0);
+				
+				al_destroy_sample(sample);
+				al_play_sample(death, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				al_rest(0.8);
+				acabar=true;
 				al_draw_bitmap(perdeu,0,0,0);
+				al_rest(1.3);
+			}
+			
+			
             
 			al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
@@ -865,28 +885,27 @@ int main(int argc, char **argv)
 		//Codigo para o pacman morrer quando ocupar a mesma posição que um fantasma
 			if( (g==i && h==j) || (i==r && j==t) || (i==aX && j==aY) || (i==vX && j==vY)){
 				gameover=true;
-				
-				mapa = al_load_bitmap("mapmorte.bmp");
-				al_draw_bitmap(perdeu,1,0,1);
-				al_destroy_sample(sample);
-				al_play_sample(death, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-				al_rest(3.5);
-				return 0;
+			}
 
                 //Codigo para o pacman morrer quando ele e algum fantasma trocarem de posições
-        }else if ((lastpacmanx==g && lastpacmany==h && i==ulx && j==uly) || 
+        else if ((lastpacmanx==g && lastpacmany==h && i==ulx && j==uly) || 
                   (lastpacmanx==r && lastpacmany==t && i==lastazulx && j==lastazuly) ||
                   (lastpacmanx==aX && lastpacmany==aY && i==lastamarelox && j==lastamareloy) ||
                   (lastpacmanx==vX && lastpacmany==vY && i==lastverdex && j==lastverdey) ){
                     gameover=true;
-                    mapa = al_load_bitmap("mapmorte.bmp");
-					al_draw_bitmap(perdeu,1,0,1);
-					al_destroy_sample(sample);
-                    al_play_sample(death, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                    al_rest(3.5);
-                    return 0;
-                  }
-
+                }
+				
+		if(acabar){
+			al_destroy_bitmap(pacman);
+			al_destroy_bitmap(bolas);
+			al_destroy_bitmap(blinky);
+			al_destroy_bitmap(azul);
+			al_destroy_bitmap(ghostAmarelo);
+			al_destroy_bitmap(ghostVerde);
+            al_rest(3.92);
+            return 0;
+            }
+			
 
 		if(bola==0){
             al_destroy_sample(sample);
@@ -902,6 +921,8 @@ int main(int argc, char **argv)
         lastamarelox=aX; lastamareloy=aY;
         lastverdex=vX; lastverdey=vY;
         lastazulx=r; lastazuly=t;
+		
+		
     }
 	
 	
