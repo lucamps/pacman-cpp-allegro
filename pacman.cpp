@@ -12,7 +12,7 @@
 #include <time.h>
 
 using namespace std;
-const float FPS = 6.8;
+const float FPS = 6.7;
 const int SCREEN_W = 460; 
 const int SCREEN_H = 550;   
 
@@ -77,6 +77,7 @@ ALLEGRO_DISPLAY *display = NULL;
 ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 ALLEGRO_TIMER *timer = NULL;
 ALLEGRO_BITMAP *mapa   = NULL;
+ALLEGRO_BITMAP *perdeu = NULL;
 ALLEGRO_BITMAP *bolas   = NULL;
 ALLEGRO_BITMAP *pacman   = NULL;
 ALLEGRO_BITMAP *pac_up   = NULL;
@@ -92,7 +93,7 @@ ALLEGRO_BITMAP *azul = NULL;
 ALLEGRO_SAMPLE *sample = NULL;
 ALLEGRO_SAMPLE *win = NULL;
 ALLEGRO_SAMPLE *death = NULL;
-ALLEGRO_SAMPLE *omaewa = NULL;
+ALLEGRO_SAMPLE *beggining = NULL;
 ALLEGRO_FONT *fonte = NULL;
 
 int i = 17, j = 11; //Posicao do PacMan
@@ -101,6 +102,9 @@ int r = 21, t = 1; // Posicao do Azul
 int aX = 1, aY = 21; // Posicao do fantasma Amarelo
 int vX = 21, vY = 21; // Posicao do fantasma Verde
 int q = 20; //tamanho de cada celula no mapa
+
+bool gameover = false; 
+bool playwaka = false;
 
 // Variveis de posicao do pacman na tela
 int posy = i*q;
@@ -372,10 +376,10 @@ int inicializa() {
       fprintf(stderr, "failed to reserve samples!\n");
       return -1;
    }
-    win = al_load_sample("beggining.wav" );
-    death = al_load_sample("nani.wav" );
+    win = al_load_sample("you win.wav" );
+    death = al_load_sample("wasted.wav" );
 
-    omaewa = al_load_sample("omaewa.wav" );
+    beggining = al_load_sample("beggining.wav" );
     if(!win){
         printf("Winning audio clip sample not loaded! \n");
         return -1;
@@ -384,19 +388,19 @@ int inicializa() {
         printf("Death clip sample not loaded! \n");
         return -1;
     }
-    if(!omaewa){
-        printf("Omaewa clip sample not loaded! \n");
+    if(!beggining){
+        printf("Beggining clip sample not loaded! \n");
         return -1;
     }
     
-    sample = al_load_sample("suspense.wav" ); //musica que sera carregada
+    sample = al_load_sample("waka.wav" ); //musica que sera carregada
 
    if (!sample){
       printf( "Audio clip sample not loaded!\n" );
       return -1;
    }
-
-    al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
+   
+	
 
     if(!al_init_image_addon())
     {
@@ -412,7 +416,7 @@ int inicializa() {
         return 0;
     }
 
-
+	
     mapa = al_load_bitmap("map.bmp");
     if(!mapa)
     {
@@ -421,6 +425,15 @@ int inicializa() {
         return 0;
     }
     al_draw_bitmap(mapa,0,0,0);
+	
+	perdeu = al_load_bitmap("wasted.png");
+    if(!perdeu)
+    {
+        cout << "Falha ao carregar a imagem wasted.png!" << endl;
+        al_destroy_display(display);
+        return 0;
+    }
+    
 
     pacman = al_load_bitmap("pacman.png");
     pac_up = al_load_bitmap("pac_up.png");
@@ -543,10 +556,7 @@ int main(int argc, char **argv)
         if(ev.type == ALLEGRO_EVENT_TIMER){
 
 
-        if (sominicial){
-            al_play_sample(omaewa, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-            sominicial=false;
-        }
+        
         /*Movimentacao do pac man*/
        
         // Se chegar na borda do mapa, teleportar para outra
@@ -786,15 +796,27 @@ int main(int argc, char **argv)
 		
 
         al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
+		
+		
+		
+		
+		
 
         if(redraw && al_is_event_queue_empty(event_queue)){
 
             redraw = false;
 
+			
             
             al_clear_to_color(al_map_rgb(0,0,0));
-
-            al_draw_bitmap(mapa,0,0,0);
+			
+			
+			
+			
+			if(!gameover)
+				al_draw_bitmap(mapa,0,0,0);
+			else
+				al_draw_bitmap(perdeu,0,0,0);
             
 			al_draw_textf(fonte, al_map_rgb(200, 200, 200), 0, 505, 0, "Score: %d", pontos);
 
@@ -824,33 +846,55 @@ int main(int argc, char **argv)
             al_flip_display();
 
         }
-
-
-		if(bola==0){
-            
-            al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-            al_rest(4.8);
-            return 0;
+		
+		if(playwaka){
+			al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);
+			playwaka = false;
+		}
+		
+		if (sominicial){
+            al_play_sample(beggining, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+            sominicial=false;
+			al_rest(3.1);
+			playwaka = true;
         }
-         //Codigo para o pacman morrer quando ocupar a mesma posição que um fantasma
-        if( (g==i && h==j) || (i==r && j==t) || (i==aX && j==aY) || (i==vX && j==vY)){
-
-            al_destroy_sample(sample);
-            al_play_sample(death, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-            al_rest(2.8);
-            return 0;
+		
+		
+		
+		
+		//Codigo para o pacman morrer quando ocupar a mesma posição que um fantasma
+			if( (g==i && h==j) || (i==r && j==t) || (i==aX && j==aY) || (i==vX && j==vY)){
+				gameover=true;
+				
+				mapa = al_load_bitmap("mapmorte.bmp");
+				al_draw_bitmap(perdeu,1,0,1);
+				al_destroy_sample(sample);
+				al_play_sample(death, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+				al_rest(3.5);
+				return 0;
 
                 //Codigo para o pacman morrer quando ele e algum fantasma trocarem de posições
         }else if ((lastpacmanx==g && lastpacmany==h && i==ulx && j==uly) || 
                   (lastpacmanx==r && lastpacmany==t && i==lastazulx && j==lastazuly) ||
                   (lastpacmanx==aX && lastpacmany==aY && i==lastamarelox && j==lastamareloy) ||
                   (lastpacmanx==vX && lastpacmany==vY && i==lastverdex && j==lastverdey) ){
-                    
-                    al_destroy_sample(sample);
+                    gameover=true;
+                    mapa = al_load_bitmap("mapmorte.bmp");
+					al_draw_bitmap(perdeu,1,0,1);
+					al_destroy_sample(sample);
                     al_play_sample(death, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                    al_rest(2.8);
+                    al_rest(3.5);
                     return 0;
                   }
+
+
+		if(bola==0){
+            al_destroy_sample(sample);
+            al_play_sample(win, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+            al_rest(4.8);
+            return 0;
+        }
+       
     
         //armazena as ultimas posicoes dos fantasmas e do pacman
         lastpacmanx=i; lastpacmany=j;
@@ -859,6 +903,8 @@ int main(int argc, char **argv)
         lastverdex=vX; lastverdey=vY;
         lastazulx=r; lastazuly=t;
     }
+	
+	
 
     al_destroy_bitmap(mapa);
     al_destroy_font(fonte);
@@ -872,5 +918,7 @@ int main(int argc, char **argv)
     al_destroy_bitmap(azul);
     al_destroy_bitmap(ghostAmarelo);
     al_destroy_bitmap(ghostVerde);
+	al_destroy_bitmap(perdeu);
+	
     return 0;
 }
