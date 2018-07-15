@@ -12,7 +12,7 @@
 #include <time.h>
 
 using namespace std;
-const float FPS = 6.7;
+const float FPS = 6.6;
 const int SCREEN_W = 460; 
 const int SCREEN_H = 550;   
 
@@ -98,15 +98,16 @@ ALLEGRO_SAMPLE *beggining = NULL;
 ALLEGRO_FONT *fonte = NULL;
 
 int i = 17, j = 11; //Posicao do PacMan
-int g = 1, h = 1; // Posicao do Blinky
-int r = 21, t = 1; // Posicao do Azul
-int aX = 1, aY = 21; // Posicao do fantasma Amarelo
-int vX = 21, vY = 21; // Posicao do fantasma Verde
+int r = 8, t = 11; // Posicao do Azul
+int aX = 9, aY = 11; // Posicao do fantasma Amarelo
+int vX = 10, vY = 11; // Posicao do fantasma Verde
+int g = 11, h = 11; // Posicao do Blinky
 int q = 20; //tamanho de cada celula no mapa
 
 bool gameover = false; 
 bool playwaka = false;
 bool acabar = false;
+
 // Variveis de posicao do pacman na tela
 int posy = i*q;
 int posx = j*q;
@@ -156,68 +157,69 @@ void blinkyMove(char M[][24],int &x, int &y, int &bX, int &bY) {
 					ulx=x;
 					uly=y;
 					y--;
-                    bX = y*q;
+					bX = y*q;
 					return;
 				}else if((x==8) && (y==11) && (j>=y)) {
 					ulx=x;
 					uly=y;
 					y++;
-                    bX = y*q;
+					bX = y*q;
 					return;
 				}
-                Info vai[4]; //calculo das distancias das 4 posicoes ao redor de blinky
-                vai[0].dist= distancia(x+1,y,i,j); vai[0].x=x+1; vai[0].y=y;vai[0].seta='S';
-                vai[1].dist= distancia(x,y-1,i,j); vai[1].x=x; vai[1].y=y-1;vai[1].seta='A';
-                vai[2].dist= distancia(x-1,y,i,j); vai[2].x=x-1; vai[2].y=y;vai[2].seta='W';
-                vai[3].dist= distancia(x,y+1,i,j); vai[3].x=x; vai[3].y=y+1;vai[3].seta='D';
+				Info vai[4]; //calculo das distancias das 4 posicoes ao redor de blinky
+				vai[0].dist= distancia(x+1,y,i,j); vai[0].x=x+1; vai[0].y=y;vai[0].seta='S';
+				vai[1].dist= distancia(x,y-1,i,j); vai[1].x=x; vai[1].y=y-1;vai[1].seta='A';
+				vai[2].dist= distancia(x-1,y,i,j); vai[2].x=x-1; vai[2].y=y;vai[2].seta='W';
+				vai[3].dist= distancia(x,y+1,i,j); vai[3].x=x; vai[3].y=y+1;vai[3].seta='D';
 
-                double less=1000;
-                int which=1000;
-                for(int c=0;c<4;c++){  //vendo qual distancia � menor e ao mesmo tempo acessivel
-                        if((vai[c].dist<less) && (M[vai[c].x][vai[c].y]!='1')){
-                            if((vai[c].x!=ulx) || (vai[c].y!=uly)){
-                              less=vai[c].dist;
-                              which=c;
-                            }
-                        }
-                }
+				double less=1000;
+				int which=1000;
+				for(int c=0;c<4;c++){  //vendo qual distancia � menor e ao mesmo tempo acessivel
+						if((vai[c].dist<less) && (M[vai[c].x][vai[c].y]!='1')){
+							if((vai[c].x!=ulx) || (vai[c].y!=uly)){
+							  less=vai[c].dist;
+							  which=c;
+							}
+						}
+				}
 				ulx=x;
 				uly=y;
 
 
-                if(which==0) {   //indo pela menor distancia
-                    x++;
-                    bY = x*q;
-                }
+				if(which==0) {   //indo pela menor distancia
+					x++;
+					bY = x*q;
+				}
 
-                else if(which==2) {
-                    x--;
-                    bY = x*q;
-                }
+				else if(which==2) {
+					x--;
+					bY = x*q;
+				}
 
-                else if(which==3) {
-                    y++;
-                    bX = y*q;
-                }
+				else if(which==3) {
+					y++;
+					bX = y*q;
+				}
 
-                else if(which==1) {
-                    y--;
-                    bX = y*q;
-                }
+				else if(which==1) {
+					y--;
+					bX = y*q;
+				}
 
-                if(x == 10 && y == -1){
-                    x = 10;
-                    y = 23;
-                    bX = y*q;
-                    bY = x*q;
-                }
+				if(x == 10 && y == -1){
+					x = 10;
+					y = 23;
+					bX = y*q;
+					bY = x*q;
+				}
 
-                else if(x == 10 && y == 22){
-                    x = 10;
-                    y = -1;
-                    bX = y*q;
-                    bY = x*q;
-                }
+				else if(x == 10 && y == 22){
+					x = 10;
+					y = -1;
+					bX = y*q;
+					bY = x*q;
+				}
+				
 
 }
 
@@ -554,11 +556,19 @@ int inicializa() {
 }
 int main(int argc, char **argv)
 {
+	int contador = 0;
+	
+	
+	
     int pontos=0;
     if(!inicializa()) return -1;
 
     while(!sair)
     {
+		cout << contador << endl;
+		contador++;
+		
+		
         ALLEGRO_EVENT ev;
         al_wait_for_event(event_queue, &ev);
         
@@ -594,26 +604,19 @@ int main(int argc, char **argv)
 				lastmouth=2;
 				i--;
 				posy = i*q;
-				anterior=4;
-				
+				anterior=4;	
 			}
 			else{
 				if(anterior==1 && MAPA[i][j-1] != '1'){
-				
 					pacman=pac_left;
 					j--;
 					posx = j*q;
-				
-					
 				}
 				if(anterior==3 && MAPA[i][j+1] != '1'){
-		
 					lastmouth=3;
 					pacman=pac_right;
 					j++;
 					posx = j*q;
-			
-					
 				}
 			}
 			//Se passa pela bola, a bola some
@@ -621,116 +624,98 @@ int main(int argc, char **argv)
                     MAPA[i][j] = '0';
                     bola--;
                     pontos++;
-
                 }
 		}
 		
-		
-
-
-			if(intencao==2){
-				if(MAPA[i+1][j] != '1'){
-					pacman=pac_down;
-					lastmouth=0;
-					i++;
-					posy = i*q;
-					anterior=2;
-				}
-				else{
-					if(anterior==1 && MAPA[i][j-1] != '1'){
-						
-						pacman=pac_left;
-						j--;
-						posx = j*q;
-					
-					}
-					if(anterior==3 && MAPA[i][j+1] != '1'){
-						
-						lastmouth=3;
-						pacman=pac_right;
-						j++;
-						posx = j*q;
-						
-						
-					}	
-				}
-				if(MAPA[i][j] == '2'){
-                    MAPA[i][j] = '0';
-                    bola--;
-                    pontos++;
-                }
+		if(intencao==2){
+			if(MAPA[i+1][j] != '1'){
+				pacman=pac_down;
+				lastmouth=0;
+				i++;
+				posy = i*q;
+				anterior=2;
 			}
-			
-
-			if(intencao==1){
-				if(MAPA[i][j-1] != '1'){
+			else{
+				if(anterior==1 && MAPA[i][j-1] != '1'){			
 					pacman=pac_left;
-					lastmouth=1;
 					j--;
 					posx = j*q;
-					anterior=1;
 				}
-				else{
-						if(anterior==2 && MAPA[i+1][j] != '1'){
-							lastmouth=0;
-							pacman=pac_down;
-							i++;
-							posy = i*q;
-						}
-						if(anterior==4 && MAPA[i-1][j] != '1'){
-						
-							lastmouth=2;
-							pacman=pac_up;
-							i--;
-							posy = i*q;
-						
-							
-							
-						}
-				
-				}
-				if(MAPA[i][j] == '2'){
-                    MAPA[i][j] = '0';
-                    bola--;
-                    pontos++;
-                }
+				if(anterior==3 && MAPA[i][j+1] != '1'){
+					lastmouth=3;
+					pacman=pac_right;
+					j++;
+					posx = j*q;
+				}	
 			}
+			if(MAPA[i][j] == '2'){
+				MAPA[i][j] = '0';
+				bola--;
+				pontos++;
+			}
+		}
+			
+		if(intencao==1){
+			if(MAPA[i][j-1] != '1'){
+				pacman=pac_left;
+				lastmouth=1;
+				j--;
+				posx = j*q;
+				anterior=1;
+			}
+			else{
+				if(anterior==2 && MAPA[i+1][j] != '1'){
+					lastmouth=0;
+					pacman=pac_down;
+					i++;
+					posy = i*q;
+				}
+				if(anterior==4 && MAPA[i-1][j] != '1'){					
+					lastmouth=2;
+					pacman=pac_up;
+					i--;
+					posy = i*q;
+				}
+			}
+			if(MAPA[i][j] == '2'){
+				MAPA[i][j] = '0';
+				bola--;
+				pontos++;
+			}
+		}
 			
            
 
-			if(intencao==3){ 
-				if(MAPA[i][j+1] != '1'){
-					pacman=pac_right;
-					lastmouth=3;
-					j++;
-					posx = j*q;
-					anterior=3;
-				}
-				else{
-					
-						if(anterior==2 && MAPA[i+1][j] != '1'){
-							lastmouth=0;
-							pacman=pac_down;
-							i++;
-							posy = i*q;
-						}
-						if(anterior==4 && MAPA[i-1][j] != '1'){
-							lastmouth=2;
-							pacman=pac_up;
-							i--;
-							posy = i*q;
-						}
-					
-				}
-				if(MAPA[i][j] == '2'){
-                    MAPA[i][j] = '0';
-                    bola--;
-                    pontos++;
-                }
+		if(intencao==3){ 
+			if(MAPA[i][j+1] != '1'){
+				pacman=pac_right;
+				lastmouth=3;
+				j++;
+				posx = j*q;
+				anterior=3;
 			}
-
-
-
+			else{				
+				if(anterior==2 && MAPA[i+1][j] != '1'){
+					lastmouth=0;
+					pacman=pac_down;
+					i++;
+					posy = i*q;
+				}
+				if(anterior==4 && MAPA[i-1][j] != '1'){
+					lastmouth=2;
+					pacman=pac_up;
+					i--;
+					posy = i*q;
+				}
+			}
+			if(MAPA[i][j] == '2'){
+				MAPA[i][j] = '0';
+				bola--;
+				pontos++;
+			}
+		}
+		//**********************************//
+		
         // Controle do abrir e fechar da boca do pacman
         if(sim%2==0){
             aux = pacman;
@@ -822,7 +807,7 @@ int main(int argc, char **argv)
 			
 			
 			
-			
+			//wasted gta
 			if(!gameover)
 				al_draw_bitmap(mapa,0,0,0);
 			else{			//troca o mapa se perdeu
@@ -835,6 +820,7 @@ int main(int argc, char **argv)
 				al_draw_bitmap(perdeu,0,0,0);
 				al_rest(1.3);
 			}
+			//******************//
 			
 			
             
@@ -856,11 +842,18 @@ int main(int argc, char **argv)
             al_draw_bitmap(ghostVerde,verdeX,verdeY,0);
             al_draw_bitmap(azul, azulX,azulY,0);
 			
-
-            randomMove(MAPA,aX,aY,amareloX,amareloY,1);
-            blinkyMove(MAPA,g,h,bX,bY);
-            randomMove(MAPA,vX,vY,verdeX,verdeY,2);
-            randomMove(MAPA,r,t,azulX,azulY,0);
+			//fantasmas
+			randomMove(MAPA,r,t,azulX,azulY,0); //o azul inicia com o jogo
+			
+			if(contador >=70) //depois de um tempo o amarelo sai
+				randomMove(MAPA,aX,aY,amareloX,amareloY,1);
+            
+			if(contador >=140) //depois o verde
+				randomMove(MAPA,vX,vY,verdeX,verdeY,2);
+            
+			if(contador >= 210) //por ultimo o blinky
+				blinkyMove(MAPA,g,h,bX,bY);
+			//***********//
 
             
             al_flip_display();
