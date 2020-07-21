@@ -379,10 +379,10 @@ int inicializa() {
       fprintf(stderr, "failed to reserve samples!\n");
       return -1;
    }
-    win = al_load_sample("you win.wav" );
-    death = al_load_sample("wasted.wav" );
+    win = al_load_sample("assets/sounds/you win.wav" );
+    death = al_load_sample("assets/sounds/wasted.wav" );
 
-    beggining = al_load_sample("beggining.wav" );
+    beggining = al_load_sample("assets/sounds/beggining.wav" );
     if(!win){
         printf("Winning audio clip sample not loaded! \n");
         return -1;
@@ -396,7 +396,7 @@ int inicializa() {
         return -1;
     }
     
-    sample = al_load_sample("waka.wav" ); //musica que sera carregada
+    sample = al_load_sample("assets/sounds/waka.wav" ); //musica que sera carregada
 
    if (!sample){
       printf( "Audio clip sample not loaded!\n" );
@@ -420,7 +420,7 @@ int inicializa() {
     }
 
 	
-    mapa = al_load_bitmap("map.bmp");
+    mapa = al_load_bitmap("assets/maps/map.bmp");
     if(!mapa)
     {
         cout << "Falha ao carregar o mapa!" << endl;
@@ -430,7 +430,7 @@ int inicializa() {
     al_draw_bitmap(mapa,0,0,0);
 	
 	
-	mapa2 = al_load_bitmap("map2.bmp");
+	mapa2 = al_load_bitmap("assets/maps/map2.bmp");
     if(!mapa2)
     {
         cout << "Falha ao carregar o mapa 2!" << endl;
@@ -438,7 +438,7 @@ int inicializa() {
         return 0;
     }
 	
-	perdeu = al_load_bitmap("mapmorte.bmp");
+	perdeu = al_load_bitmap("assets/maps/mapmorte.bmp");
     if(!perdeu)
     {
         cout << "Falha ao carregar a imagem mapmorte.bmp!" << endl;
@@ -447,16 +447,16 @@ int inicializa() {
     }
     
 
-    pacman = al_load_bitmap("pacman.png");
-    pac_up = al_load_bitmap("pac_up.png");
-    pac_down = al_load_bitmap("pac_down.png");
-    pac_left = al_load_bitmap("pac_left.png");
-    pac_right = al_load_bitmap("pac_right.png");
-	shutup = al_load_bitmap("shutup.png");
-	blinky = al_load_bitmap("blinky.png");
-	azul = al_load_bitmap("azul.png");
-	ghostAmarelo = al_load_bitmap("amarelo.png");
-	ghostVerde = al_load_bitmap("verde.png");
+    pacman = al_load_bitmap("assets/characters/pacman/pacman.png");
+    pac_up = al_load_bitmap("assets/characters/pacman/pac_up.png");
+    pac_down = al_load_bitmap("assets/characters/pacman/pac_down.png");
+    pac_left = al_load_bitmap("assets/characters/pacman/pac_left.png");
+    pac_right = al_load_bitmap("assets/characters/pacman/pac_right.png");
+	shutup = al_load_bitmap("assets/characters/pacman/shutup.png");
+	blinky = al_load_bitmap("assets/characters/ghosts/blinky.png");
+	azul = al_load_bitmap("assets/characters/ghosts/azul.png");
+	ghostAmarelo = al_load_bitmap("assets/characters/ghosts/amarelo.png");
+	ghostVerde = al_load_bitmap("assets/characters/ghosts/verde.png");
 
     if(!pacman)
     {
@@ -504,7 +504,7 @@ int inicializa() {
     al_draw_bitmap(ghostVerde,verdeX,verdeY,0);
 
 
-    bolas = al_load_bitmap("bolas.png");
+    bolas = al_load_bitmap("assets/maps/bolas.png");
     if(!bolas)
     {
         cout << "Falha ao carregar as bolas!" << endl;
@@ -554,6 +554,7 @@ int inicializa() {
 
     return 1;
 }
+
 int main(int argc, char **argv)
 {
 	int contador = 0;
