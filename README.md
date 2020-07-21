@@ -30,11 +30,13 @@ In case of Allegro 5 or Makefile aren't installed yet:
   </tr>
  </table>
  
-## Team:
+## Credits:
+
+Federal University of Viçosa (College)
 
 - Gabriel Félix (github.com/geflx)
 - Matheus Lima (github.com/MatheusAL)
 - Lucas Campos (github.com/lucamps)
 - Lucas Reis (github.com/lucas-t-reis)
+- André Gustavo dos Santos (Teacher)
 
-Federal University of Viçosa
