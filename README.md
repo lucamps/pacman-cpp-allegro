@@ -1,6 +1,6 @@
 ## Pacman Game (C++/Allegro5)
 
-A game developed in the first college semester for Programming 1 subject at UFV by a group of four students, using C++ and Allegro5 library to clone the Pacman game. This is a non-profit project for educational use.
+A game developed in the first semester of CS course's "Programming 1" subject at UFV by a group of four students, using C++ and Allegro5 library to clone a Pacman game. This is a non-profit project for educational use.
 
 OBS: The source code variables and it's comments are currently in Portuguese-BR language.
 
