@@ -18,7 +18,7 @@ $ sudo apt-get install make
 $ sudo apt-get install liballegro5-dev
 $ sudo apt-get install liballegro5.2
 ```
-## Results:
+## Results
 
 The result is shown below, with in-game pictures. It also has the background sound, sound effects and a score counter.
 <table>
